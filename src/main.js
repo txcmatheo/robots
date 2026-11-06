@@ -137,6 +137,18 @@ const carbonTex = canvasTex(128, 128, (c, W, H) => {
   }
 });
 carbonTex.wrapS = carbonTex.wrapT = THREE.RepeatWrapping; carbonTex.repeat.set(3, 6);
+// acero gastado (como la G Wagon): base gris con manchas, rayas finas y desgaste claro
+let aceroTex = null;
+function texAcero() {
+  if (aceroTex) return aceroTex;
+  aceroTex = canvasTex(512, 512, (c, W, H) => {
+    c.fillStyle = '#8d9096'; c.fillRect(0, 0, W, H);
+    for (let i = 0; i < 260; i++) { const x = Math.random() * W, y = Math.random() * H, r = 6 + Math.random() * 40; const g = c.createRadialGradient(x, y, 0, x, y, r); const v = Math.random() < 0.55 ? '40,41,44' : '205,208,212'; g.addColorStop(0, `rgba(${v},${0.08 + Math.random() * 0.18})`); g.addColorStop(1, `rgba(${v},0)`); c.fillStyle = g; c.fillRect(x - r, y - r, r * 2, r * 2); }
+    c.lineWidth = 1; for (let i = 0; i < 900; i++) { const x = Math.random() * W, y = Math.random() * H, a = (Math.random() - 0.5) * 0.6, L = 4 + Math.random() * 30; c.strokeStyle = `rgba(${Math.random() < 0.5 ? '255,255,255' : '20,20,22'},${0.08 + Math.random() * 0.2})`; c.beginPath(); c.moveTo(x, y); c.lineTo(x + Math.cos(a) * L, y + Math.sin(a) * L); c.stroke(); }
+  });
+  aceroTex.wrapS = aceroTex.wrapT = THREE.RepeatWrapping; aceroTex.repeat.set(2, 2);
+  return aceroTex;
+}
 const radialTex = canvasTex(256, 256, (c, W, H) => { const g = c.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W / 2); g.addColorStop(0, 'rgba(255,255,255,0.9)'); g.addColorStop(0.5, 'rgba(255,255,255,0.15)'); g.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = g; c.fillRect(0, 0, W, H); });
 const ringTex = canvasTex(1024, 1024, (c, W) => {
   const cx = W / 2; c.strokeStyle = '#fff';
@@ -161,6 +173,7 @@ function mat(color, fin) {
     shift: { metalness: 0.65, roughness: 0.16, clearcoat: 1, iridescence: 1, iridescenceIOR: 2.0, iridescenceThicknessRange: [250, 800] },
     holo: { metalness: 0.95, roughness: 0.1, iridescence: 1, iridescenceIOR: 2.2, iridescenceThicknessRange: [100, 1300] },
     carbon: { map: carbonTex, color: '#ffffff', roughness: 0.3, clearcoat: 1, clearcoatRoughness: 0.05 },
+    acero: fin === 'acero' ? { map: texAcero(), roughnessMap: texAcero(), metalness: 0.7, roughness: 0.62, clearcoat: 0.15, clearcoatRoughness: 0.6 } : {},
   }[fin] || {};
   m.setValues(P); m.userData.fin = fin;
   if (fin === 'holo' || fin === 'shift') holoMats.add(m);
@@ -547,7 +560,7 @@ function highlight(i) {
 function setExplode(r, v) { gsap.to(r.userData, { explode: v, duration: 1.3, ease: 'expo.inOut' }); }
 
 // ================= CAPÍTULO DE CADA ROBOT =================
-const FN = { gloss: 'Brillante', satin: 'Satinado', matte: 'Mate', chrome: 'Cromo espejo', gold: 'Cromo oro', shift: 'Color shift', holo: 'Holográfico', pearl: 'Perla', carbon: 'Carbono', factory: 'De fábrica', factorym: 'De fábrica' };
+const FN = { gloss: 'Brillante', satin: 'Satinado', matte: 'Mate', chrome: 'Cromo espejo', gold: 'Cromo oro', shift: 'Color shift', holo: 'Holográfico', pearl: 'Perla', carbon: 'Carbono', acero: 'Acero gastado', factory: 'De fábrica', factorym: 'De fábrica' };
 const titulo = s => String(s).split(' ').map(w => w.length === 1 || /\d/.test(w) ? w.toUpperCase() : w.charAt(0) + w.slice(1).toLowerCase()).join(' ');
 const slug = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -578,7 +591,7 @@ function fillGarage() {
 }
 function pickConcept(j) {
   const a = ARTISTAS[S.idx]; if (!a.conceptos[j] || (S.concept[S.idx] === j && robots[S.idx].userData.modo === j)) return;
-  S.concept[S.idx] = j; sfx.select(); fillGarage(); vestir(robots[S.idx], j, true); goboShow(a, acentoActual());
+  S.concept[S.idx] = j; sfx.select(); fillGarage(); vestir(robots[S.idx], j, true); goboShow(a, acentoActual()); if ($('#info').classList.contains('ficha')) { hideInfo(); ficha(); }
 }
 
 // recorrido de cámara por el robot
@@ -686,7 +699,16 @@ function showInfo(m, ev) {
   if (m.material.emissive && !m.userData.libre) { const mm = m.material; mm.emissive.set(acentoActual()); mm.emissiveIntensity = 0.8; gsap.to(mm, { emissiveIntensity: 0, duration: 0.9 }); }
   sfx.blip();
 }
-function hideInfo() { $('#info')?.classList.remove('show'); }
+function hideInfo() { $('#info')?.classList.remove('show', 'ficha'); $('#b-ficha')?.classList.remove('on'); }
+// ficha de instalación: panel por panel, lo que se corta, de qué color y con qué acabado
+const ORDEN_Z = ['casco', 'coronilla', 'pecho', 'pecho_inf', 'mochila', 'hombro', 'brazo', 'antebrazo', 'cadera', 'muslo', 'rodilla', 'espinillera', 'bota'];
+function ficha() {
+  const el = $('#info'); if (el.classList.contains('ficha')) { hideInfo(); return; }
+  const a = ARTISTAS[S.idx], r = robots[S.idx], piel = pielDe(a, r.userData.modo), c = a.conceptos[S.concept[S.idx]];
+  const filas = ORDEN_Z.map(z => { const sp = piel.z[z]; const imp = !!piel.p?.[z] || !!c?.mats; return `<tr><td>${ZONAS[z].nombre}</td><td><i style="background:${sp?.[0] || '#555'}"></i>${sp ? (FN[sp[1]] || sp[1]) : '—'}</td><td>${imp && piel.p?.[z] ? 'Impreso' : ''}</td></tr>`; }).join('');
+  el.innerHTML = `<div class="i-k">FICHA DE INSTALACIÓN · ${MODELO.corto}</div><div class="i-n">${esc(titulo(r.userData.modo === 'fabrica' ? 'De fábrica' : c?.nombre || ''))}</div><table class="fi"><tbody>${filas}</tbody></table><p>Sin forrar: visor y cámaras, rejillas, juntas y articulaciones, manos, puertos y emblema. Ningún impreso cruza una junta.</p>`;
+  el.style.left = ''; el.style.top = ''; el.classList.add('show', 'ficha'); $('#b-ficha').classList.add('on'); sfx.blip();
+}
 
 // etiquetas del despiece
 const LBL_Z = ['casco', 'visor', 'pecho', 'mochila', 'hombro', 'brazo', 'antebrazo', 'mano', 'cadera', 'muslo', 'rodilla', 'espinillera', 'bota'];
@@ -766,6 +788,7 @@ function wireUI() {
   $('#b-rot').onclick = () => { S.auto = !S.auto; controls.autoRotate = S.auto; sfx.blip(); syncDock(); };
   $('#g-next').onclick = () => goCh(S.ch + 1); $('#g-prev').onclick = () => goCh(S.ch - 1);
   $('#b-tour').onclick = () => recorrido();
+  $('#b-ficha').onclick = () => ficha();
   $$('#g-mode button').forEach(b => b.onclick = async () => {
     const r = robots[S.idx]; if (!ARTISTAS[S.idx].conceptos.length) return;
     const toFab = b.dataset.v === 'fab'; if ((r.userData.modo === 'fabrica') === toFab) return;

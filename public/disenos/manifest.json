@@ -6,9 +6,7 @@
   "logo": "westcol_logo.png",
   "renders": {
    "kid-w": "westcol_kid-w.webp",
-   "kid-w_espalda": "westcol_kid-w_espalda.webp",
-   "w-sound-24": "westcol_w-sound-24.webp",
-   "w-sound-24_espalda": "westcol_w-sound-24_espalda.webp"
+   "kid-w_espalda": "westcol_kid-w_espalda.webp"
   },
   "logoWebp": "westcol_logo.webp"
  },
