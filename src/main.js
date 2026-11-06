@@ -16,6 +16,8 @@ import { DecalGeometry } from 'three/addons/geometries/DecalGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { crearEstudio } from './estudio.js';
 import { mostrarCierre, ocultarCierre } from './cierre.js';
+import { IMPRESOS } from './impresos.js';
+import { BLESSD_EXTRA } from './blessd_extra.js';
 import { ARTISTAS, CANCION, FABRICA, IMPRESOS_FABRICA, MODELO, WESTCOL_DISENOS, BLESSD_DISENOS, ZONAS } from './datos.js';
 
 const N = ARTISTAS.length;
@@ -107,7 +109,16 @@ const camera = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, 0.05, 8
 camera.position.set(0, 1.4, 9);
 const look = new THREE.Vector3(0, 1, 0);
 const controls = new OrbitControls(camera, canvas);
-controls.enabled = false; controls.enableDamping = true; controls.enablePan = false;
+controls.enabled = false; controls.enableDamping = true; controls.dampingFactor = 0.08;
+// ratón: izquierdo gira, derecho (o rueda presionada) desplaza, rueda acerca; en táctil, dos dedos desplazan y acercan
+controls.enablePan = true; controls.screenSpacePanning = true; controls.panSpeed = 0.9; controls.zoomSpeed = 0.9;
+controls.mouseButtons = { LEFT: THREE.MOUSE.ROTATE, MIDDLE: THREE.MOUSE.PAN, RIGHT: THREE.MOUSE.PAN };
+controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+// el desplazamiento no puede sacar al robot de cuadro
+const LIM = { x: [-0.9, 0.9], y: [0.15, 1.75], z: [-0.7, 0.7] };
+controls.addEventListener('change', () => { const t = controls.target, d = new THREE.Vector3(); const c = t.clone(); t.set(THREE.MathUtils.clamp(t.x, ...LIM.x), THREE.MathUtils.clamp(t.y, ...LIM.y), THREE.MathUtils.clamp(t.z, ...LIM.z)); d.subVectors(t, c); if (d.lengthSq()) camera.position.add(d); });
+controls.addEventListener('start', () => { canvas.style.cursor = 'grabbing'; }); controls.addEventListener('end', () => { canvas.style.cursor = ''; });
 controls.minDistance = 1.3; controls.maxDistance = 6; controls.maxPolarAngle = Math.PI * 0.62; controls.autoRotateSpeed = 1.6;
 
 const rt = new THREE.WebGLRenderTarget(innerWidth, innerHeight, { samples: MOVIL ? 2 : 4, type: THREE.HalfFloatType });
@@ -173,7 +184,7 @@ function mat(color, fin) {
     shift: { metalness: 0.65, roughness: 0.16, clearcoat: 1, iridescence: 1, iridescenceIOR: 2.0, iridescenceThicknessRange: [250, 800] },
     holo: { metalness: 0.95, roughness: 0.1, iridescence: 1, iridescenceIOR: 2.2, iridescenceThicknessRange: [100, 1300] },
     carbon: { map: carbonTex, color: '#ffffff', roughness: 0.3, clearcoat: 1, clearcoatRoughness: 0.05 },
-    acero: fin === 'acero' ? { map: texAcero(), roughnessMap: texAcero(), metalness: 0.7, roughness: 0.62, clearcoat: 0.15, clearcoatRoughness: 0.6 } : {},
+    acero: fin === 'acero' ? { map: texAcero(), roughnessMap: texAcero(), metalness: 0.4, roughness: 0.58, clearcoat: 0.2, clearcoatRoughness: 0.55 } : {},
   }[fin] || {};
   m.setValues(P); m.userData.fin = fin;
   if (fin === 'holo' || fin === 'shift') holoMats.add(m);
@@ -330,8 +341,8 @@ async function cargarEntregas() {
     }
     // Westcol usa su colección propia (W Sound, Kid W, En vivo); el resto, la del JSON
     // las colecciones se definen en datos.js; de Blessd se conserva SIEMPRE BLESSD del JSON
-    const propios = art.id === 'westcol' ? WESTCOL_DISENOS : art.id === 'blessd' ? [...BLESSD_DISENOS, ...conceptos.filter(c => c.nombre === 'SIEMPRE BLESSD')] : null;
-    art.conceptos = propios ? propios.map((x, k) => ({ ...x, z: { ...FABRICA, ...x.z }, id: String.fromCharCode(65 + k) })) : conceptos;
+    const propios = art.id === 'westcol' ? WESTCOL_DISENOS : art.id === 'blessd' ? [...BLESSD_DISENOS, ...BLESSD_EXTRA, ...conceptos.filter(c => c.nombre === 'SIEMPRE BLESSD')] : null;
+    art.conceptos = propios ? propios.map((x, k) => ({ ...x, p: IMPRESOS[x.nombre] || x.p, z: { ...FABRICA, ...x.z }, id: String.fromCharCode(65 + k) })) : conceptos;
     if (files.logo) art.logo = d(files.logo);
     if (files.logoWebp) art.logoWebp = d(files.logoWebp);
     art.renders = Object.fromEntries(Object.entries(files.renders || {}).map(([k, f]) => [k, d(f)]));
@@ -509,7 +520,7 @@ function camTo(pos, tgt, dur = 1.6, ease = 'power3.inOut') {
   gsap.to(look, { x: tgt.x, y: tgt.y, z: tgt.z, duration: dur, ease });
 }
 function camSelect() { const n = isNarrow(), z = 5.4 + Math.max(0, 1.7 - innerWidth / innerHeight) * 2.4; const zn = 6.4 + Math.max(0, 0.9 - innerWidth / innerHeight) * 7; camTo(n ? V(0, 0.95, zn) : V(-0.55, 1.15, z), n ? V(0, 0.62, 0) : V(-0.55, 0.86, 0), 2.2); }
-function camGarage() { const n = isNarrow(); camTo(V(0.4, n ? 0.95 : 1.15, n ? 6.2 : 3.9), V(n ? 0 : -0.45, n ? 0.45 : 0.92, 0), 1.9); }
+function camGarage() { const n = isNarrow(); camTo(V(0.4, n ? 0.95 : 1.1, n ? 6.2 : 4.5), V(n ? 0 : -0.45, n ? 0.45 : 0.92, 0), 1.9); }
 
 // ================= CAPÍTULOS =================
 const CH = [{ k: 'select', n: 'Los dos' }, ...ARTISTAS.map((a, i) => ({ k: 'garage', i, n: a.nombre })), { k: 'piel', n: 'La piel' }, { k: 'cierre', n: 'Cierre' }];
@@ -1041,4 +1052,4 @@ if (matchMedia('(pointer:fine)').matches && !REDUCIDO) {
   document.documentElement.classList.add('cur');
 }
 boot(); requestAnimationFrame(loop);
-if (import.meta.env.DEV) window.__sp = { renderer, scene, robots, S, get dpr() { return dpr; } };
+if (import.meta.env.DEV) window.__sp = { renderer, scene, robots, S, camera, controls, look, get dpr() { return dpr; } };

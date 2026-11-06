@@ -87,7 +87,7 @@ function ondas(c, W, H, color, n = 18) { // ecualizador
   c.restore();
 }
 const KICK = '#53FC18', NEGRO = '#0B0B0D', ORO = '#E8C27A', BLANCO = '#F2F2F0', ROJO = '#FF0700', CROMO = '#B1B3B2';
-function vinilo(c, W, H, { x = 0.5, y = 0.5, r = 0.42, label = ORO } = {}) { // disco con surcos
+export function vinilo(c, W, H, { x = 0.5, y = 0.5, r = 0.42, label = ORO } = {}) { // disco con surcos
   const cx = x * W, cy = y * H, R = Math.min(W, H) * r;
   c.save(); c.fillStyle = '#050506'; c.beginPath(); c.arc(cx, cy, R, 0, Math.PI * 2); c.fill();
   c.strokeStyle = 'rgba(232,194,122,.35)'; c.lineWidth = Math.max(1, R * 0.012);
@@ -115,7 +115,7 @@ const KICK_FORMAS = [
   [[991,3],[1343,3],[1343,222],[1131,222],[1131,441],[1343,441],[1343,661],[991,661],[991,589],[920,589],[920,76],[991,76]],
   KICK_K.map(([x, y]) => [x + 1409, y]),
 ];
-function kickLogo(c, W, H, { color = KICK, x = 0.5, y = 0.5, w = 0.8 } = {}) {
+export function kickLogo(c, W, H, { color = KICK, x = 0.5, y = 0.5, w = 0.8 } = {}) {
   const s = Math.min((W * w) / 1972, (H * 0.9) / 659); const ox = x * W - (1972 * s) / 2 - 5 * s, oy = y * H - (659 * s) / 2 - 3 * s;
   c.save(); c.fillStyle = color;
   for (const f of KICK_FORMAS) { c.beginPath(); f.forEach(([px, py], i) => (i ? c.lineTo : c.moveTo).call(c, ox + px * s, oy + py * s)); c.closePath(); c.fill(); }
@@ -123,7 +123,7 @@ function kickLogo(c, W, H, { color = KICK, x = 0.5, y = 0.5, w = 0.8 } = {}) {
 }
 
 // motivos de la G: cruz gótica de puntas florenzadas y filas de remaches
-function cruzGotica(c, x, y, s, color = '#0B0B0D') {
+export function cruzGotica(c, x, y, s, color = '#0B0B0D') {
   c.save(); c.translate(x, y); c.fillStyle = color; const a = s * 0.16;
   c.fillRect(-a / 2, -s, a, s * 2); c.fillRect(-s * 0.72, -a / 2 - s * 0.22, s * 1.44, a);
   for (const [px, py] of [[0, -s], [0, s], [-s * 0.72, -s * 0.22], [s * 0.72, -s * 0.22]]) {
@@ -138,7 +138,7 @@ function remaches(c, W, H, m = 0.05, n = 14, color = '#c9ccd1') {
   c.restore();
 }
 // rayo de carreras con degradado amarillo-naranja y contorno rojo oscuro
-function rayoCarrera(c, W, H, { x = 0.5, y = 0.5, w = 0.9, h = 0.5, rot = 0 } = {}) {
+export function rayoCarrera(c, W, H, { x = 0.5, y = 0.5, w = 0.9, h = 0.5, rot = 0 } = {}) {
   const pts = [[0, 0.42], [0.42, 0.3], [0.36, 0.5], [1, 0.18], [0.5, 0.62], [0.56, 0.44], [0.02, 0.72]];
   c.save(); c.translate(x * W, y * H); c.rotate(rot); const bw = w * W, bh = h * H; c.translate(-bw / 2, -bh / 2);
   const g = c.createLinearGradient(0, 0, bw, 0); g.addColorStop(0, '#FF8A00'); g.addColorStop(0.55, '#FFC400'); g.addColorStop(1, '#FFE45C');
@@ -180,11 +180,11 @@ export const WESTCOL_DISENOS = [
   {
     // negro mate-satinado de punta a punta; el verde Kick solo arriba (casco), abajo (botas) y en el logo. Sin cromo.
     nombre: 'KICK', acento: KICK, visor: KICK,
-    idea: 'Su casa es Kick: negro satinado de punta a punta y el verde de la marca solo en casco, botas y el logo oficial, grande y solo, en el pecho.',
+    idea: 'Su casa es Kick: negro satinado con el verde de la marca en casco, hombros y botas, y el logo oficial grande en la espalda. Franjas pixeladas como la K de Kick en muslos, brazos y espinilleras.',
     paleta: [NEGRO, KICK, '#1A1C1F', BLANCO],
     z: {
       casco: [KICK, 'gloss'], coronilla: [NEGRO, 'gloss'], pecho: [NEGRO, 'satin'], pecho_inf: ['#1A1C1F', 'matte'],
-      mochila: [NEGRO, 'satin'], hombro: [NEGRO, 'gloss'], brazo: [NEGRO, 'satin'], antebrazo: [NEGRO, 'gloss'],
+      mochila: [NEGRO, 'satin'], hombro: [KICK, 'gloss'], brazo: [NEGRO, 'satin'], antebrazo: [NEGRO, 'gloss'],
       cadera: ['#1A1C1F', 'matte'], muslo: [NEGRO, 'satin'], rodilla: [NEGRO, 'gloss'], espinillera: ['#1A1C1F', 'carbon'], bota: [KICK, 'gloss'],
     },
     p: {
@@ -219,11 +219,11 @@ export const WESTCOL_DISENOS = [
     // acero gastado manda; negro mate en brazos, cadera y botas (los rines); carbono en coronilla y torso inferior.
     nombre: 'G WAGON', acento: '#C9CCD1', visor: '#FFD9A0',
     idea: 'Su G Wagon personalizada hecha piel: acero gastado con remaches en el borde de cada panel grande y una cruz gótica negra como sello. Carbono forjado como el capó y negro mate como los rines.',
-    paleta: ['#C3C6CC', NEGRO, '#2A2B2E', '#C9CCD1'],
+    paleta: ['#8A8D93', NEGRO, '#2A2B2E', '#C9CCD1'],
     z: {
-      casco: ['#C3C6CC', 'acero'], coronilla: ['#ffffff', 'carbon'], pecho: ['#C3C6CC', 'acero'], pecho_inf: ['#ffffff', 'carbon'],
-      mochila: ['#C3C6CC', 'acero'], hombro: ['#C3C6CC', 'acero'], brazo: [NEGRO, 'matte'], antebrazo: ['#C3C6CC', 'acero'],
-      cadera: [NEGRO, 'matte'], muslo: ['#C3C6CC', 'acero'], rodilla: ['#C9CCD1', 'chrome'], espinillera: ['#C3C6CC', 'acero'], bota: [NEGRO, 'matte'],
+      casco: ['#B4B7BD', 'acero'], coronilla: ['#ffffff', 'carbon'], pecho: ['#B4B7BD', 'acero'], pecho_inf: ['#ffffff', 'carbon'],
+      mochila: ['#B4B7BD', 'acero'], hombro: ['#B4B7BD', 'acero'], brazo: [NEGRO, 'matte'], antebrazo: ['#B4B7BD', 'acero'],
+      cadera: [NEGRO, 'matte'], muslo: ['#B4B7BD', 'acero'], rodilla: ['#C9CCD1', 'chrome'], espinillera: ['#B4B7BD', 'acero'], bota: [NEGRO, 'matte'],
     },
     p: {
       // una sola cruz por panel; la de la espalda es la más grande (el héroe de la pieza)
@@ -253,12 +253,25 @@ export const WESTCOL_DISENOS = [
     },
     glow: {},
   },
+  {
+    // boxeo de lujo: la bata de campeón hecha a medida. Vino satinado manda; el oro es el del cinturón.
+    nombre: 'CAMPEÓN', acento: '#D4AF6A', visor: '#D4AF6A',
+    idea: 'Flow de boxeador de lujo: vino satinado como una bata de campeón hecha a medida, acolchado en rombos dorados y su nombre en arco en la espalda. Cinturón de oro, vendas crema en los antebrazos y botas altas de boxeo.',
+    paleta: ['#5A0F1F', '#D4AF6A', '#F1E6D2', NEGRO],
+    z: {
+      casco: ['#5A0F1F', 'gloss'], coronilla: ['#F2C230', 'gold'], pecho: ['#5A0F1F', 'satin'], pecho_inf: ['#5A0F1F', 'satin'],
+      mochila: ['#5A0F1F', 'satin'], hombro: ['#F2C230', 'gold'], brazo: ['#5A0F1F', 'satin'], antebrazo: ['#F1E6D2', 'satin'],
+      cadera: ['#B8913A', 'gold'], muslo: ['#5A0F1F', 'gloss'], rodilla: ['#F1E6D2', 'satin'], espinillera: ['#F1E6D2', 'gloss'], bota: ['#F1E6D2', 'gloss'],
+    },
+    p: {},
+    glow: {},
+  },
 ];
 
 // ---------- Blessd ----------
 // Sus dos discos de 2026 como dos pieles: EL MEJOR HOMBRE DEL MUNDO (el azul de su pelo, el halo)
 // y EL PEOR HOMBRE DEL MUNDO (negro, trap, los cuernos sobre la H).
-function siglas(c, W, H, t, { y = 0.5, size = H * 0.2, color = BLANCO, cuernos = false, halo = false, haloColor = '#F2F2F0', maxW = 0.9, gastado = true } = {}) {
+export function siglas(c, W, H, t, { y = 0.5, size = H * 0.2, color = BLANCO, cuernos = false, halo = false, haloColor = '#F2F2F0', maxW = 0.9, gastado = true } = {}) {
   c.save(); c.font = `900 ${size}px Unbounded`; c.textBaseline = 'middle';
   const m = c.measureText(t).width, sx = Math.min(1, (maxW * W) / m);
   c.translate(W / 2 - (m * sx) / 2, y * H); c.scale(sx, 1); c.fillStyle = color; c.fillText(t, 0, 0);
@@ -274,12 +287,12 @@ function siglas(c, W, H, t, { y = 0.5, size = H * 0.2, color = BLANCO, cuernos =
   }
   c.restore();
 }
-function grietas(c, W, H, color = '#D1D1D1', seed = 7, cx = 0.5, cy = 0.45) {
+export function grietas(c, W, H, color = '#D1D1D1', seed = 7, cx = 0.5, cy = 0.45) {
   c.save(); c.strokeStyle = color; c.lineCap = 'round'; let sd = seed; const rn = () => { sd = (sd * 9301 + 49297) % 233280; return sd / 233280; };
   for (let i = 0; i < 9; i++) { let x = cx * W, y = cy * H, a = (i / 9) * Math.PI * 2 + rn() * 0.4; c.lineWidth = Math.max(2, H * 0.01); c.beginPath(); c.moveTo(x, y); for (let k = 0; k < 6; k++) { a += (rn() - 0.5) * 0.8; const L = Math.min(W, H) * (0.06 + rn() * 0.1); x += Math.cos(a) * L; y += Math.sin(a) * L; c.lineTo(x, y); } c.stroke(); }
   c.restore();
 }
-function cadena(c, W, H, color = '#C5CCD0', y0 = 0.05, depth = 0.4) { // cadena cubana helada
+export function cadena(c, W, H, color = '#C5CCD0', y0 = 0.05, depth = 0.4) { // cadena cubana helada
   c.save(); c.strokeStyle = color; c.lineWidth = H * 0.03; c.shadowColor = '#ffffff'; c.shadowBlur = H * 0.02;
   for (let i = 0; i < 18; i++) { const t = i / 17, x = W * (0.16 + 0.68 * t), y = H * (y0 + Math.sin(t * Math.PI) * depth); c.beginPath(); c.ellipse(x, y, H * 0.035, H * 0.022, i % 2 ? 0.7 : -0.7, 0, Math.PI * 2); c.stroke(); }
   c.restore();
