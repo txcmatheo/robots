@@ -1,4 +1,4 @@
-// Segunda piel
+// Blindados
 // Westcol y Blessd sobre el EngineAI T800 Max.
 import './fuentes.js';
 import './styles.css';
@@ -648,13 +648,6 @@ function pintarLB() {
 }
 function moverLB(d) { LB.i = (LB.i + d + LB.list.length) % LB.list.length; pintarLB(); sfx.hover(); }
 function cerrarLB() { const el = $('#lightbox'); el.classList.remove('show'); el.setAttribute('aria-hidden', 'true'); lbFoco?.focus?.(); }
-function armarGaleria() {
-  $('#galeria').innerHTML = ARTISTAS.map((a, i) => {
-    const ims = imagenesDe(a); const c = a.conceptos[0]?.acento || a.acento;
-    return ims.length ? `<div class="gal-a"><div class="gal-h" style="--c:${c}">${logoHTML(a)}<span>${a.nombre}</span></div><div class="gal-g">${ims.map((m, k) => `<button data-a="${i}" data-k="${k}" style="--c:${c}" aria-label="Ver ${esc(m.cap)}"><img loading="lazy" decoding="async" width="480" height="600" src="${thumb(m.src)}" alt="${esc(m.cap)}"><small>${esc(m.cap.split(' · ').slice(1).join(' · '))}</small></button>`).join('')}</div></div>` : '';
-  }).join('');
-  $$('#galeria button').forEach(b => b.onclick = () => abrirLB(imagenesDe(ARTISTAS[+b.dataset.a]), +b.dataset.k));
-}
 
 
 // canción oficial: la API de YouTube solo se carga al entrar al primer capítulo
@@ -800,7 +793,7 @@ function wireUI() {
   $$('#chapters a').forEach(a => a.onclick = e => { e.preventDefault(); goCh(+a.dataset.i); });
   $('#jump').innerHTML = ARTISTAS.map(a => `<button style="--c:${a.conceptos[0]?.acento || a.acento}">${a.nombre} →</button>`).join('');
   $$('#jump button').forEach((b, i) => b.onclick = () => goCh(1 + i));
-  const tk = ['SEGUNDA PIEL', ...ARTISTAS.map(a => `${a.nombre} — ${a.conceptos[0]?.nombre || 'EN DISEÑO'}`), MODELO.nombre, 'PELÍCULA DE PROTECCIÓN, PANEL POR PANEL', 'NUNCA SE TAPA UN SENSOR', 'DISEÑO SOBRE EL MODELO OFICIAL'].join('  ·  ') + '  ·  ';
+  const tk = ['BLINDADOS', ...ARTISTAS.map(a => `${a.nombre} — ${a.conceptos[0]?.nombre || 'EN DISEÑO'}`), MODELO.nombre, 'PELÍCULA DE PROTECCIÓN, PANEL POR PANEL', 'NUNCA SE TAPA UN SENSOR', 'DISEÑO SOBRE EL MODELO OFICIAL'].join('  ·  ') + '  ·  ';
   $('#ticker-in').textContent = tk + tk + tk;
 
   let down = null, pend = null;
@@ -885,7 +878,7 @@ function openPiel() {
 // ================= PORTADA =================
 const BOOT_LINES = ['CARGANDO MODELO OFICIAL ' + MODELO.nombre, 'PANELES Y ZONAS SIN FORRAR', 'PIELES DE WESTCOL · BLESSD', 'LISTO'];
 async function boot() {
-  $('.cover h1').innerHTML = [...'Segunda '].map(c => `<span class="ch">${c === ' ' ? '&nbsp;' : c}</span>`).join('') + '<em>' + [...'piel.'].map(c => `<span class="ch">${c}</span>`).join('') + '</em>';
+  $('.cover h1').innerHTML = '<em>' + [...'Blindados.'].map(c => `<span class="ch">${c}</span>`).join('') + '</em>';
   gsap.fromTo('.cover h1 .ch', { yPercent: 110, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 1.2, stagger: 0.04, ease: 'expo.out', delay: 0.05 });
   gsap.fromTo(['.lockup > *', '.who'], { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 1.2, stagger: 0.15, ease: 'expo.out', delay: 0.3 });
   const log = $('#boot-log'); const bar = $('#boot-bar i'); const pct = $('#boot-pct');
@@ -899,7 +892,7 @@ async function boot() {
   }, 110);
   try { await fontsP; await construir(); }
   catch (e) { clearInterval(tick); log.innerHTML = '<div class="err">No se pudo cargar el modelo 3D. Revisa tu conexión y recarga la página.</div>'; console.error(e); return; }
-  buildLabels(); buildTags(); wireUI(); armarGaleria();
+  buildLabels(); buildTags(); wireUI();
   $('#lightbox .lb-x').onclick = cerrarLB; $('#lightbox .lb-p').onclick = () => moverLB(-1); $('#lightbox .lb-n').onclick = () => moverLB(1); $('#lightbox').addEventListener('click', e => { if (e.target.id === 'lightbox') cerrarLB(); });
   clearInterval(tick); const d = document.createElement('div'); d.textContent = BOOT_LINES[BOOT_LINES.length - 1]; log.appendChild(d);
   bar.style.transform = 'scaleX(1)'; pct.textContent = '100';
@@ -947,7 +940,7 @@ function intro() {
     sfx.boom(); setAcc('#e8c27a'); backdrop('#e8c27a', 0.22);
     stands.forEach(s => gsap.to(s.spot, { intensity: 4, duration: 0.8 }));
     gsap.to(key, { intensity: k0, duration: 1.6 }); gsap.to(rim1, { intensity: r0, duration: 1.6 }); gsap.to(scene, { environmentIntensity: h0, duration: 1.6 });
-    $('#io-logo').innerHTML = ''; palabras($('#io-name'), 'Segunda piel.'); $('#io-sub').textContent = 'WESTCOL × BLESSD · ' + MODELO.nombre;
+    $('#io-logo').innerHTML = ''; palabras($('#io-name'), 'Blindados.'); $('#io-sub').textContent = 'WESTCOL × BLESSD · ' + MODELO.nombre;
     gsap.fromTo('.io-c', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, ease: 'expo.out' });
   }, tEnd)
     .to(camera.position, { x: -0.55, y: 1.15, z: 5.4, duration: 2.6, ease: 'power3.inOut' }, tEnd)

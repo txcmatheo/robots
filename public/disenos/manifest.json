@@ -4,24 +4,14 @@
   "json": "westcol.json",
   "png": {},
   "logo": "westcol_logo.png",
-  "renders": {
-   "kid-w": "westcol_kid-w.webp",
-   "kid-w_espalda": "westcol_kid-w_espalda.webp"
-  },
+  "renders": {},
   "logoWebp": "westcol_logo.webp"
  },
  "blessd": {
   "json": "blessd.json",
   "png": {},
   "logo": "blessd_logo.png",
-  "renders": {
-   "el-mejor": "blessd_el-mejor.webp",
-   "el-mejor_espalda": "blessd_el-mejor_espalda.webp",
-   "el-peor": "blessd_el-peor.webp",
-   "el-peor_espalda": "blessd_el-peor_espalda.webp",
-   "siempre-blessd": "blessd_siempre-blessd.webp",
-   "siempre-blessd_espalda": "blessd_siempre-blessd_espalda.webp"
-  },
+  "renders": {},
   "logoWebp": "blessd_logo.webp"
  }
 }
