@@ -990,6 +990,8 @@ const BOOT_LINES = ['CARGANDO MODELO OFICIAL ' + MODELO.nombre, 'PANELES Y ZONAS
 async function boot() {
   $('.cover h1').innerHTML = [...'Westcol '].map(c => `<span class="ch">${c === ' ' ? '&nbsp;' : c}</span>`).join('') + '<em>' + [...'vs'].map(c => `<span class="ch">${c}</span>`).join('') + '</em>' + [...' Blessd'].map(c => `<span class="ch">${c === ' ' ? '&nbsp;' : c}</span>`).join('');
   cuentaRegresiva();
+  // botón de cristal facetado de Stream Fighters 5
+  $('#press').style.setProperty('background', `url(${BASE}sf/cristal.webp) center / 100% 100% no-repeat`, 'important');
   gsap.fromTo('.cover h1 .ch', { yPercent: 110, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 1.2, stagger: 0.04, ease: 'expo.out', delay: 0.05 });
   gsap.fromTo(['.lockup > *', '.who'], { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 1.2, stagger: 0.15, ease: 'expo.out', delay: 0.3 });
   const log = $('#boot-log'); const bar = $('#boot-bar i'); const pct = $('#boot-pct');

@@ -543,3 +543,11 @@ html{font-synthesis:none}
 #boot .lockup .lk{position:static!important;font-family:var(--serif);font-style:italic;font-weight:700;letter-spacing:.12em;color:#a9bbff}
 .sel-head h2{white-space:nowrap!important;font-size:clamp(40px,4.6vw,80px)!important}
 @media (max-width:820px){.sel-head h2{font-size:clamp(30px,9.5vw,52px)!important}}
+/* botón de cristal facetado de Stream Fighters 5 */
+#press{display:inline-grid!important;margin:8px auto 0!important;width:232px;height:153px;padding:0!important;border:0!important;border-radius:0!important;background-color:transparent!important;background-size:100% 100%!important;background-repeat:no-repeat!important;background-position:center!important;box-shadow:none!important;place-items:center;font-size:26px!important;line-height:1!important;letter-spacing:.04em!important;color:#fff!important;text-shadow:0 0 18px rgba(154,107,255,.9),0 2px 0 rgba(0,0,0,.35);filter:drop-shadow(0 10px 30px rgba(91,124,255,.35));transition:transform .24s var(--ease),filter .24s var(--ease)}
+#press::before,#press::after{display:none!important}
+#press:not(:disabled):hover{transform:scale(1.05);filter:drop-shadow(0 12px 40px rgba(154,107,255,.6)) brightness(1.12)}
+#press:not(:disabled):active{transform:scale(.97)}
+#press span{transform:skewX(-6deg)}
+@media (max-width:820px){#press{width:196px;height:129px;font-size:22px!important}}
+#press:focus-visible{outline:none!important;filter:drop-shadow(0 0 22px rgba(154,107,255,.9)) brightness(1.1)}
