@@ -1115,6 +1115,8 @@ function start() {
 const SALIDA = [V(-2.25, 0, -2.1), V(2.25, 0, -2.1)];
 const ENCUENTRO = [V(-0.6, 0, 0.2), V(0.6, 0, 0.2)];
 const MIRA = [Math.PI / 2, -Math.PI / 2]; // de perfil, mirándose
+// distancia de cámara para que entre completo un recuadro de medio ancho hw y medio alto hh (metros), en cualquier pantalla
+function distEncuadre(hw, hh) { const t = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)); return Math.max(hh / t, hw / (t * camera.aspect)) * 1.12; }
 function intro() {
   prepararActores();
   S.mode = 'intro'; document.body.dataset.mode = 'intro';
@@ -1131,17 +1133,18 @@ function intro() {
     .to(camera.position, { x: 0, z: 6.4, y: 1.1, duration: 2.6, ease: 'power2.inOut' }, 0)
     .to('#io-top', { opacity: 0, duration: 0.5 }, 2.3);
   const T = 2.4, step = 3.4;
+  const dP = distEncuadre(0.7, 1.0), dC = distEncuadre(1.2, 1.3); // un robot entero / los dos cara a cara
   ARTISTAS.forEach((art, i) => {
     const t0 = T + i * step, a = actores[i], r = a.root, sg = i ? -1 : 1;
     tl.add(() => golpe(i), t0)
       // la cámara lo recibe en su esquina y lo sigue hasta el centro
-      .to(camera.position, { x: SALIDA[i].x * 0.45 + sg * 0.4, y: 1.2, z: 2.2, duration: 1.0, ease: 'expo.out' }, t0)
-      .to(look, { x: SALIDA[i].x, y: 1.0, z: SALIDA[i].z, duration: 1.0, ease: 'expo.out' }, t0)
+      .to(camera.position, { x: SALIDA[i].x + sg * 0.3 * dP, y: 1.0, z: SALIDA[i].z + dP, duration: 1.0, ease: 'expo.out' }, t0)
+      .to(look, { x: SALIDA[i].x, y: 0.86, z: SALIDA[i].z, duration: 1.0, ease: 'expo.out' }, t0)
       .to(r.position, { x: ENCUENTRO[i].x, z: ENCUENTRO[i].z, duration: 2.1, ease: 'power1.inOut', onStart: () => { gsap.to(a, { paso: 1, duration: 0.35 }); }, onComplete: () => { gsap.to(a, { paso: 0, duration: 0.3 }); gsap.to(a, { guardia: 1, duration: 0.8, ease: 'power2.out' }); } }, t0 + 0.6)
       .to(stands[i].g.position, { x: ENCUENTRO[i].x, z: ENCUENTRO[i].z, duration: 2.1, ease: 'power1.inOut' }, t0 + 0.6)
       .to(r.rotation, { y: MIRA[i], duration: 0.7, ease: 'power2.out' }, t0 + 2.0)
-      .to(look, { x: ENCUENTRO[i].x, y: 1.05, z: ENCUENTRO[i].z, duration: 2.1, ease: 'power1.inOut' }, t0 + 0.6)
-      .to(camera.position, { x: ENCUENTRO[i].x + sg * 0.9, z: 2.8, duration: 2.1, ease: 'power1.inOut' }, t0 + 0.6);
+      .to(look, { x: ENCUENTRO[i].x, y: 0.86, z: ENCUENTRO[i].z, duration: 2.1, ease: 'power1.inOut' }, t0 + 0.6)
+      .to(camera.position, { x: ENCUENTRO[i].x + sg * 0.3 * dP, z: ENCUENTRO[i].z + dP, duration: 2.1, ease: 'power1.inOut' }, t0 + 0.6);
   });
   const tEnd = T + N * step;
   // cara a cara: plano cerrado de perfil entre los dos
@@ -1152,9 +1155,9 @@ function intro() {
     $('#io-logo').innerHTML = ''; palabras($('#io-name'), 'Cara a cara.'); $('#io-sub').textContent = 'WESTCOL VS BLESSD · STREAM FIGHTERS 5 · 14 NOV';
     gsap.fromTo('.io-c', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, ease: 'expo.out' });
   }, tEnd)
-    .to(camera.position, { x: 0.15, y: 1.15, z: 3.1, duration: 1.4, ease: 'expo.out' }, tEnd)
-    .to(look, { x: 0, y: 0.95, z: 0.2, duration: 1.4, ease: 'expo.out' }, tEnd)
-    .to(camera.position, { x: -0.15, z: 3.4, duration: 2.2, ease: 'none' }, tEnd + 1.4)
+    .to(camera.position, { x: 0.15, y: 1.05, z: 0.2 + dC, duration: 1.4, ease: 'expo.out' }, tEnd)
+    .to(look, { x: 0, y: 0.6, z: 0.2, duration: 1.4, ease: 'expo.out' }, tEnd)
+    .to(camera.position, { x: -0.15, z: 0.2 + dC * 1.08, duration: 2.2, ease: 'none' }, tEnd + 1.4)
     .to('.io-c', { opacity: 0, duration: 0.6 }, tEnd + 3.0)
     .to({}, { duration: 0.1 }, tEnd + 3.6);
   $('#io-skip').onclick = () => tl.progress(1);

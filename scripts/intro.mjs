@@ -1,7 +1,7 @@
 // Fotogramas de la entrada: node scripts/intro.mjs carpeta
 import puppeteer from 'puppeteer-core';
 const OUT = process.argv[2];
-const b = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: 'new', args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'], defaultViewport: { width: 1280, height: 720 } });
+const b = await puppeteer.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: 'new', args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'], defaultViewport: { width: +(process.env.W || 1280), height: +(process.env.H || 720), deviceScaleFactor: process.env.W < 600 ? 2 : 1, isMobile: process.env.W < 600, hasTouch: process.env.W < 600 } });
 const p = await b.newPage(); p.on('pageerror', e => console.log('ERROR:', e.message));
 await p.goto('http://localhost:5174/', { waitUntil: 'load' });
 await p.waitForFunction(() => document.querySelector('#press') && !document.querySelector('#press').disabled, { timeout: 60000 });
