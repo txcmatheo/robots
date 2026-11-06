@@ -100,11 +100,12 @@ const todo = (...fs) => (c, W, H) => fs.forEach(f => f(c, W, H));
 export const IMPRESOS = {
   'W SOUND ORO': {
     // el vinilo usa el emblema del pecho como eje: el disco gira alrededor de la pieza que no se forra
-    pecho: (c, W, H) => { vinilo(c, W, H, { x: 0.5, y: 0.585, r: 0.4 }); en('pecho', (c, w, h) => ajustado(c, w, h, 'W SOUND', { color: ORO, y: 0.32, fitH: 0.42, track: 18 }))(c, W, H); },
+    // un solo héroe en el pecho: el vinilo con canto de oro (el texto vive en la espalda)
+    pecho: (c, W, H) => { vinilo(c, W, H, { x: 0.5, y: 0.585, r: 0.4 }); const R = Math.min(W, H) * 0.4; c.save(); c.strokeStyle = ORO; c.lineWidth = R * 0.035; c.beginPath(); c.arc(W * 0.5, H * 0.585, R * 0.985, 0, Math.PI * 2); c.stroke(); c.restore(); },
+    // W SOUND grande en lo alto, todo por encima del puerto central (y≈0,47)
     mochila: en('mochila', (c, w, h) => {
-      ajustado(c, w, h, 'W SOUND', { color: ORO, y: 0.4, fitW: 0.98, fitH: 0.3, track: 6 });
-      filete(c, w, h, ORO, 0.56, 0.008, 0.36);
-      ajustado(c, w, h, 'MEDELLÍN · COLOMBIA', { font: 'JetBrains Mono', weight: 700, color: 'rgba(242,242,240,.8)', y: 0.64, fitW: 0.6, fitH: 0.05, track: 20 });
+      ajustado(c, w, h, 'W SOUND', { color: ORO, y: 0.2, fitW: 0.98, fitH: 0.26, track: 6 });
+      filete(c, w, h, ORO, 0.33, 0.012, 0.5);
     }),
     espinillera: en('espinillera', (c, w, h) => vertical(c, w, h, 'WESTCOL', { color: ORO, track: 6 })),
     antebrazo: (c, W, H) => { c.fillStyle = ORO; c.fillRect(0, H * 0.1, W, H * 0.03); c.fillRect(0, H * 0.87, W, H * 0.03); },
@@ -119,10 +120,10 @@ export const IMPRESOS = {
   },
   'KID W': {
     // agujeros de vapor: arco de puntos bajo cada hombro, como en la figura
-    pecho_puntos: (c, W, H) => { const r = W * 0.024; const L = []; for (const s of [-1, 1]) for (let k = 0; k < 5; k++) L.push([W * (0.5 + s * (0.2 + k * 0.055)), H * (0.12 + k * k * 0.006)]); puntos(c, L, r, '#5A1A33'); },
+    pecho_puntos: en('pecho', (c, w, h) => { const r = w * 0.03; const L = []; for (const s of [-1, 1]) for (let k = 0; k < 5; k++) L.push([w * (0.5 + s * (0.3 + k * 0.035)), h * (0.22 + k * 0.15)]); puntos(c, L, r, '#5A1A33'); }),
     mochila: en('mochila', (c, w, h) => { const r = w * 0.03; const L = []; for (const s of [-1, 1]) for (let k = 0; k < 6; k++) L.push([w * (0.5 + s * 0.17), h * (0.14 + k * 0.12)]); puntos(c, L, r, '#5A1A33'); }),
     // hebilla dorada lisa sobre el cinturón negro
-    pecho_inf: (c, W, H) => { const g = c.createLinearGradient(0, H * 0.25, 0, H * 0.8); g.addColorStop(0, '#F7D25A'); g.addColorStop(1, '#B9811A'); c.fillStyle = g; c.beginPath(); c.roundRect(W * 0.38, H * 0.25, W * 0.24, H * 0.5, W * 0.03); c.fill(); c.lineWidth = W * 0.01; c.strokeStyle = '#6B4A0E'; c.stroke(); },
+    pecho_inf: (c, W, H) => { const g = c.createLinearGradient(0, H * 0.25, 0, H * 0.8); g.addColorStop(0, '#F7D25A'); g.addColorStop(1, '#B9811A'); c.fillStyle = g; c.beginPath(); c.roundRect(W * 0.22, H * 0.2, W * 0.56, H * 0.6, W * 0.04); c.fill(); c.lineWidth = W * 0.014; c.strokeStyle = '#6B4A0E'; c.stroke(); },
     muslo: en('muslo', (c, w, h) => pliegues(c, w, h)),
     espinillera: en('espinillera', (c, w, h) => pliegues(c, w, h)),
     antebrazo: (c, W, H) => { c.fillStyle = '#E8B53A'; c.fillRect(0, H * 0.04, W, H * 0.05); c.fillRect(0, H * 0.91, W, H * 0.05); },
@@ -131,7 +132,8 @@ export const IMPRESOS = {
   'G WAGON': {
     // como en sus fotos: remaches en cada costura, cruces tipo daga de varios tamaños, rejilla con barra cromada
     // y la tapa de la llanta de repuesto en la espalda
-    pecho: en('pecho', (c, w, h) => { remachesBorde(c, w, h, 16); filaRemaches(c, w * 0.06, h * 0.22, w * 0.94, h * 0.22, 16); daga(c, w * 0.3, h * 0.56, h * 0.42); cruzGotica(c, w * 0.72, h * 0.48, h * 0.2, NEGRO); cruzGotica(c, w * 0.56, h * 0.84, h * 0.1, NEGRO); }),
+    // pecho: una daga con filo plata al centro, en la cara frontal del peto (lo alto de la zona mira al techo); los remaches marcan el borde del panel
+    pecho: en('pecho', (c, w, h) => { remachesBorde(c, w, h, 16); const o = h * 0.025; for (const [dx, dy] of [[o, 0], [-o, 0], [0, o], [0, -o], [o, o], [-o, -o], [o, -o], [-o, o]]) daga(c, w * 0.5 + dx, h * 0.56 + dy, h * 0.44, '#E9EBEE'); daga(c, w * 0.5, h * 0.56, h * 0.44); }),
     mochila: en('mochila', (c, w, h) => {
       remachesBorde(c, w, h, 14); filaRemaches(c, w * 0.5, h * 0.06, w * 0.5, h * 0.94, 14);
       const R = Math.min(w, h) * 0.34; c.save(); c.fillStyle = '#121214'; c.beginPath(); c.arc(w / 2, h * 0.52, R, 0, Math.PI * 2); c.fill(); c.lineWidth = R * 0.07; c.strokeStyle = '#9EA1A7'; c.stroke(); c.restore();
@@ -146,7 +148,7 @@ export const IMPRESOS = {
   },
   'RAYO W': {
     // decoración de carreras: un rayo protagonista por panel, con contorno blanco y estelas de velocidad
-    pecho: en('pecho', (c, w, h) => { estelas(c, w, h, 0.18, 0.5, 5); rayoPro(c, w, h, { x: 0.52, y: 0.52, w: 1.02, h: 0.92, rot: -0.1 }); }),
+    pecho: en('pecho', (c, w, h) => { estelas(c, w, h, 0.18, 0.5, 5); rayoPro(c, w, h, { x: 0.5, y: 0.5, w: 0.8, h: 0.78, rot: -0.06 }); }),
     mochila: en('mochila', (c, w, h) => { estelas(c, w, h, 0.12, 0.6, 7); rayoPro(c, w, h, { x: 0.5, y: 0.5, w: 1.0, h: 0.62, rot: -0.22 }); }),
     muslo: en('muslo', (c, w, h) => rayoPro(c, w, h, { x: 0.5, y: 0.52, w: 1.0, h: 0.62, rot: -Math.PI / 2 })),
     espinillera: en('espinillera', (c, w, h) => { cuadros(c, 0, 0, w, h * 0.12, 6, 2); c.save(); c.translate(0, h * 0.16); vertical(c, w, h * 0.84, 'WESTCOL', { font: 'JetBrains Mono', weight: 800, color: BLANCO, track: 8 }); c.restore(); }),
@@ -171,6 +173,10 @@ export const IMPRESOS = {
       ajustado(c, w, h, 'HOMBRE DEL MUNDO', { font: 'JetBrains Mono', weight: 800, color: BLANCO, y: 0.58, fitW: 0.82, fitH: 0.06, track: 12 });
     }),
     espinillera: en('espinillera', (c, w, h) => vertical(c, w, h, 'BLESSD', { color: AZUL, track: 4 })),
+  },
+  'SIEMPRE BLESSD': {
+    pecho: en('pecho', (c, w, h) => ajustado(c, w, h, 'SIEMPRE', { color: '#0A0A0A', y: 0.62, fitW: 0.86, fitH: 0.55, track: 4 })),
+    mochila: en('mochila', (c, w, h) => { ajustado(c, w, h, 'BLESSD', { color: '#0A0A0A', y: 0.22, fitW: 0.78, fitH: 0.26, track: 4 }); filete(c, w, h, '#0A0A0A', 0.35, 0.012, 0.5); }),
   },
   'CAMPEÓN': {
     pecho: en('pecho', (c, w, h) => acolchado(c, w, h)),
@@ -197,15 +203,16 @@ for (const d of Object.values(IMPRESOS)) {
 
 // Descripciones cortas (máx. dos frases) y fieles a lo que lleva cada piel
 export const IDEAS = {
-  'KID W': 'Inspirado en el pequeño Buu: piel rosa, muñequeras negras con filete dorado, pantalón blanco amplio y botas café. Agujeros de vapor en pecho y espalda.',
-  'W SOUND ORO': 'La edición de estudio de W Sound: negro piano con cromo oro y un vinilo dorado en el pecho. En la espalda, la firma del sello.',
+  'KID W': 'Inspirado en el pequeño Buu: piel rosa con agujeros de vapor en pecho y espalda, y cinturón negro con hebilla dorada. Muñequeras negras con filete dorado, pantalón blanco amplio y botas café.',
+  'W SOUND ORO': 'La edición de estudio de W Sound: negro piano con cromo oro y un vinilo de canto dorado girando alrededor del emblema. En la espalda, W SOUND en grande.',
   KICK: 'Su casa es Kick: negro satinado con el verde de la marca en casco, hombros y botas. El logo oficial va grande en la espalda.',
-  'G WAGON': 'Su G Wagon hecha piel: acero plata gastado, remaches en cada costura y cruces daga. En la espalda, la tapa de la llanta de repuesto.',
+  'G WAGON': 'Su G Wagon hecha piel: acero plata gastado, remaches en cada costura y una cruz daga como sello en el pecho. En la espalda, la tapa de la llanta de repuesto.',
   'RAYO W': 'Un coche de carreras hecho robot: rojo caramelo con rayos amarillo-naranja y estelas de velocidad. Bandera a cuadros en las espinilleras.',
-  'CAMPEÓN': 'Boxeo de lujo: vino satinado como una bata de campeón y acolchado en rombos dorados en pecho y espalda. Vendas crema y botas altas.',
+  'CAMPEÓN': 'Boxeo de lujo: vino satinado como una bata de campeón, acolchado en rombos dorados en pecho y espalda. Vendas crema y botas altas.',
   'E.M.H.D.M': 'El Mejor Hombre del Mundo: el azul de Blessd de punta a punta, con las siglas y el halo sobre la H en el pecho.',
   'E.P.H.D.M': 'El Peor Hombre del Mundo: negro trap con las siglas estarcidas y los cuernos sobre la H. Cadena helada y cromo en hombros y rótulas.',
   'ERA MORADA': 'El morado que llevó antes del azul: uva y morado de punta a punta, pecho limpio y EL BENDITO dentro de un aura en la espalda.',
-  'HECHO EN MEDELLÍN': 'Su primer álbum (2021): el verde y blanco de Medellín, con MEDELLÍN en el pecho y MEDALLO en la espalda.',
-  'TRINIDAD BENDITA': 'Su disco de 2025: marfil y oro con un rosario en el pecho y tres cruces góticas en la espalda. BENDITO en las espinilleras.',
+  'HECHO EN MEDELLÍN': 'Su primer álbum (2021): el verde y blanco de Medellín, con MEDELLÍN en el pecho y MEDALLO bajo una franja de la bandera en la espalda.',
+  'SIEMPRE BLESSD': 'El álbum de "Mírame" en su azul firma: SIEMPRE en el pecho y BLESSD en la espalda en negro, con cromo plata en hombros y rodillas.',
+  'TRINIDAD BENDITA': 'Su disco de 2025: marfil y oro con un rosario vino y oro en el pecho, y tres cruces góticas sobre su nombre en la espalda. BENDITO en las espinilleras.',
 };

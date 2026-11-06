@@ -257,8 +257,8 @@ export const WESTCOL_DISENOS = [
     idea: 'Flow de boxeador de lujo: vino satinado como una bata de campeón hecha a medida, acolchado en rombos dorados y su nombre en arco en la espalda. Cinturón de oro, vendas crema en los antebrazos y botas altas de boxeo.',
     paleta: ['#5A0F1F', '#D4AF6A', '#F1E6D2', NEGRO],
     z: {
-      casco: ['#5A0F1F', 'gloss'], coronilla: ['#F2C230', 'gold'], pecho: ['#5A0F1F', 'satin'], pecho_inf: ['#5A0F1F', 'satin'],
-      mochila: ['#5A0F1F', 'satin'], hombro: ['#F2C230', 'gold'], brazo: ['#5A0F1F', 'satin'], antebrazo: ['#F1E6D2', 'satin'],
+      casco: ['#5A0F1F', 'gloss'], coronilla: ['#D4AF6A', 'gold'], pecho: ['#5A0F1F', 'satin'], pecho_inf: ['#5A0F1F', 'satin'],
+      mochila: ['#5A0F1F', 'satin'], hombro: ['#D4AF6A', 'gold'], brazo: ['#5A0F1F', 'satin'], antebrazo: ['#F1E6D2', 'satin'],
       cadera: ['#B8913A', 'gold'], muslo: ['#5A0F1F', 'gloss'], rodilla: ['#F1E6D2', 'satin'], espinillera: ['#F1E6D2', 'gloss'], bota: ['#F1E6D2', 'gloss'],
     },
     p: {},

@@ -33,9 +33,10 @@ function enCajaVertical(c, W, H, t, [x0, y0, x1, y1], o = {}) {
   c.restore();
 }
 // Rosario: cuentas sobre una curva colgante + crucifijo al final.
-function rosario(c, W, H, { color = '#D4AF37', x0 = 0.16, x1 = 0.84, y0 = 0.1, fondo = 0.34, cuentas = 23, cruz = true } = {}) {
-  c.save(); c.fillStyle = color; c.strokeStyle = color; c.lineWidth = Math.max(1.5, H * 0.004);
-  const r = Math.min(W, H) * 0.013;
+function rosario(c, W, H, o = {}) {
+  const { color = '#D4AF37', x0 = 0.16, x1 = 0.84, y0 = 0.1, fondo = 0.34, cuentas = 23, cruz = true } = o;
+  c.save(); c.fillStyle = color; c.strokeStyle = color; c.lineWidth = Math.max(1.5, H * (o.hilo ?? 0.004));
+  const r = Math.min(W, H) * (o.r ?? 0.013);
   const pt = (t) => [W * (x0 + (x1 - x0) * t), H * (y0 + (fondo - y0) * Math.sin(t * Math.PI))];
   c.beginPath(); for (let i = 0; i <= 60; i++) { const [x, y] = pt(i / 60); i ? c.lineTo(x, y) : c.moveTo(x, y); } c.stroke();
   for (let i = 0; i < cuentas; i++) { const [x, y] = pt((i + 0.5) / cuentas); c.beginPath(); c.arc(x, y, i % 6 === 5 ? r * 1.6 : r, 0, Math.PI * 2); c.fill(); }
@@ -72,10 +73,10 @@ export const BLESSD_EXTRA = [
     p: {
       mochila: (c, W, H) => {
         // todo en la parte alta de la placa: el puerto central (y≈0,47) y las rejillas de abajo quedan libres
-        anillo(c, W, H, { x: 0.5, y: 0.27, r: 0.22, color: 'rgba(201,179,242,.35)', grosor: 0.045 });
-        anillo(c, W, H, { x: 0.5, y: 0.27, r: 0.18, color: LILA, grosor: 0.011 });
-        enCaja(c, W, H, 'EL', [0.41, 0.13, 0.59, 0.21], { font: 'Bodoni Moda', weight: 600, italic: true, color: LILA });
-        enCaja(c, W, H, 'BENDITO', [0.22, 0.22, 0.78, 0.37], { color: BLANCO });
+        anillo(c, W, H, { x: 0.5, y: 0.26, r: 0.2, color: 'rgba(201,179,242,.4)', grosor: 0.05 });
+        anillo(c, W, H, { x: 0.5, y: 0.26, r: 0.2, color: LILA, grosor: 0.014 });
+        enCaja(c, W, H, 'EL', [0.4, 0.1, 0.6, 0.18], { font: 'Bodoni Moda', weight: 700, italic: true, color: LILA });
+        enCaja(c, W, H, 'BENDITO', [0.12, 0.19, 0.88, 0.35], { color: BLANCO });
       },
       muslo: (c, W, H) => { cruzGotica(c, 0.5 * W, 0.28 * H, Math.min(W, H) * 0.18, LILA); },
       espinillera: (c, W, H) => enCajaVertical(c, W, H, 'BLESSD', [0.26, 0.12, 0.74, 0.88], { color: LILA }),
@@ -85,7 +86,7 @@ export const BLESSD_EXTRA = [
   {
     // verde y blanco de la bandera de Medellín; verde manda, hueso de segundo, oro solo en filetes.
     nombre: 'HECHO EN MEDELLÍN', acento: VERDE, visor: HUESO,
-    idea: 'Su primer álbum (2021) hecho camiseta de barrio: el verde y blanco de la bandera de Medellín con MEDELLÍN en el pecho. En la espalda MEDALLO, el éxito que lo puso en el mapa con Ovy On The Drums.',
+    idea: 'Su primer álbum (2021) hecho camiseta de barrio: el verde y blanco de la bandera de Medellín con MEDELLÍN en el pecho. En la espalda, bajo una franja de la bandera, MEDALLO: el éxito que lo puso en el mapa con Ovy On The Drums.',
     paleta: [VERDE, VERDE_O, HUESO, ORO],
     z: {
       casco: [VERDE, 'gloss'], coronilla: [HUESO, 'gloss'], pecho: [VERDE, 'satin'], pecho_inf: [HUESO, 'satin'],
@@ -94,16 +95,15 @@ export const BLESSD_EXTRA = [
     },
     p: {
       pecho: (c, W, H) => {
-        enCaja(c, W, H, 'HECHO EN', [0.3, 0.12, 0.7, 0.19], { font: 'JetBrains Mono', weight: 800, color: HUESO, track: 0.3 });
-        enCaja(c, W, H, 'MEDELLÍN', [0.13, 0.2, 0.87, 0.36], { color: HUESO });
-        filete(c, W, H, ORO, 0.39, 0.008, 0.3, 0.7);
-        enCaja(c, W, H, 'ITAGÜÍ · ANTIOQUIA · 2021', [0.22, 0.41, 0.78, 0.45], { font: 'JetBrains Mono', weight: 700, color: HUESO });
+        enCaja(c, W, H, 'HECHO EN', [0.3, 0.11, 0.7, 0.2], { font: 'JetBrains Mono', weight: 800, color: HUESO, track: 0.3 });
+        enCaja(c, W, H, 'MEDELLÍN', [0.13, 0.21, 0.87, 0.38], { color: HUESO });
+        filete(c, W, H, ORO, 0.41, 0.01, 0.3, 0.7);
       },
       mochila: (c, W, H) => {
-        c.save(); c.fillStyle = HUESO; c.fillRect(0.1 * W, 0.62 * H, 0.8 * W, 0.28 * H); c.restore(); // franja blanca de la bandera
-        enCaja(c, W, H, 'MEDALLO', [0.12, 0.28, 0.88, 0.48], { color: HUESO });
-        enCaja(c, W, H, 'BLESSD × OVY ON THE DRUMS', [0.16, 0.51, 0.84, 0.56], { font: 'JetBrains Mono', weight: 800, color: ORO });
-        enCaja(c, W, H, 'SIEMPRE', [0.28, 0.7, 0.72, 0.82], { color: VERDE }); // franja blanca: el lema
+        // franja de la bandera (blanco sobre verde) en lo alto; MEDALLO debajo, todo antes del puerto (y≈0,47)
+        c.save(); c.fillStyle = HUESO; c.fillRect(0.1 * W, 0.12 * H, 0.8 * W, 0.06 * H); c.restore();
+        filete(c, W, H, ORO, 0.195, 0.008, 0.1, 0.9);
+        enCaja(c, W, H, 'MEDALLO', [0.12, 0.24, 0.88, 0.42], { color: HUESO });
       },
       muslo: (c, W, H) => enCaja(c, W, H, '2021', [0.24, 0.16, 0.76, 0.4], { color: HUESO }),
       espinillera: (c, W, H) => enCajaVertical(c, W, H, 'ITAGÜÍ', [0.26, 0.12, 0.74, 0.88], { color: VERDE }),
@@ -113,7 +113,7 @@ export const BLESSD_EXTRA = [
   {
     // marfil manda (casi todo el cuerpo), oro de segundo en rótulas/hombros/rosario, vino como sombra puntual.
     nombre: 'TRINIDAD BENDITA', acento: ORO_V, visor: '#FFF4D6',
-    idea: 'El Blessd católico de su disco de 2025: marfil y oro como un rosario, con un rosario y su crucifijo colgando en el pecho y tres cruces góticas en la espalda. BENDITO a lo largo de la espinillera, como lo lleva tatuado en los dedos.',
+    idea: 'El Blessd católico de su disco de 2025: marfil y oro, con un rosario vino de crucifijo dorado en el pecho y tres cruces góticas sobre su nombre en la espalda. BENDITO a lo largo de la espinillera, como lo lleva tatuado en los dedos.',
     paleta: [MARFIL, ORO_V, VINO, NEGRO],
     z: {
       casco: [MARFIL, 'pearl'], coronilla: [ORO_V, 'gold'], pecho: [MARFIL, 'pearl'], pecho_inf: [MARFIL, 'satin'],
@@ -122,15 +122,19 @@ export const BLESSD_EXTRA = [
     },
     p: {
       pecho: (c, W, H) => {
-        rosario(c, W, H, { color: ORO_V, x0: 0.14, x1: 0.86, y0: 0.11, fondo: 0.35 }); // crucifijo termina en y≈0.44
+        rosario(c, W, H, { color: VINO, x0: 0.16, x1: 0.84, y0: 0.2, fondo: 0.3, cuentas: 17, cruz: false, r: 0.03, hilo: 0.008 });
+        const x = W / 2, y = H * 0.3, s = H * 0.04; // crucifijo dorado colgando del centro, termina en y≈0.44
+        c.save(); c.fillStyle = ORO_V; c.strokeStyle = VINO; c.lineWidth = s * 0.12;
+        for (const [rx, ry, rw, rh] of [[x - s * 0.22, y + s * 0.4, s * 0.44, s * 3.1], [x - s * 0.95, y + s * 1.1, s * 1.9, s * 0.42]]) { c.fillRect(rx, ry, rw, rh); c.strokeRect(rx, ry, rw, rh); }
+        c.restore();
       },
       mochila: (c, W, H) => {
         const s = Math.min(W, H);
-        cruzGotica(c, 0.22 * W, 0.42 * H, s * 0.14, ORO_V);
-        cruzGotica(c, 0.5 * W, 0.38 * H, s * 0.22, VINO);
-        cruzGotica(c, 0.78 * W, 0.42 * H, s * 0.14, ORO_V);
-        enCaja(c, W, H, 'Trinidad Bendita', [0.16, 0.64, 0.84, 0.76], { font: 'Pirata One', weight: 400, color: NEGRO });
-        enCaja(c, W, H, 'PADRE · HIJO · ESPÍRITU', [0.24, 0.79, 0.76, 0.84], { font: 'JetBrains Mono', weight: 700, color: ORO_V });
+        // todo por encima del puerto central (y≈0,47): la cruz vino al centro, las de oro a los lados, el nombre debajo
+        cruzGotica(c, 0.25 * W, 0.24 * H, s * 0.075, ORO_V);
+        cruzGotica(c, 0.5 * W, 0.22 * H, s * 0.105, VINO);
+        cruzGotica(c, 0.75 * W, 0.24 * H, s * 0.075, ORO_V);
+        enCaja(c, W, H, 'Trinidad Bendita', [0.14, 0.34, 0.86, 0.44], { font: 'Pirata One', weight: 400, color: NEGRO });
       },
       muslo: (c, W, H) => { cruzGotica(c, 0.5 * W, 0.28 * H, Math.min(W, H) * 0.18, ORO_V); },
       espinillera: (c, W, H) => enCajaVertical(c, W, H, 'BENDITO', [0.27, 0.12, 0.73, 0.88], { font: 'Pirata One', weight: 400, color: VINO }),
