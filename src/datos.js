@@ -158,95 +158,98 @@ const NAVY = '#14213D', AMARILLO = '#F5C518';
 //  - ningún impreso cruza una junta ni tapa visor, rejillas o puertos (las zonas son paneles reales).
 export const WESTCOL_DISENOS = [
   {
+    // negro manda; el oro solo vive en cromo (coronilla, hombros, rótulas, botas) y en el impreso. Fuera el rojo suelto.
     nombre: 'W SOUND ORO', acento: ORO, visor: ORO,
-    idea: 'La edición de estudio de W Sound: negro piano, cromo oro en hombros, cadera, rótulas y botas, un vinilo con la W en el pecho y la firma del sello en la espalda.',
-    paleta: [NEGRO, ORO, '#F2C230', ROJO],
+    idea: 'La edición de estudio de su sello W Sound: negro piano con cromo oro en coronilla, hombros, rótulas y botas. En el pecho, un vinilo con la W; en la espalda, la firma del sello.',
+    paleta: [NEGRO, ORO, '#F2C230'],
     z: {
       casco: [NEGRO, 'gloss'], coronilla: ['#F2C230', 'gold'], pecho: [NEGRO, 'gloss'], pecho_inf: [NEGRO, 'satin'],
       mochila: [NEGRO, 'gloss'], hombro: ['#F2C230', 'gold'], brazo: [NEGRO, 'gloss'], antebrazo: [NEGRO, 'gloss'],
-      cadera: ['#F2C230', 'gold'], muslo: [NEGRO, 'gloss'], rodilla: ['#F2C230', 'gold'], espinillera: [NEGRO, 'carbon'], bota: ['#F2C230', 'gold'],
+      cadera: [NEGRO, 'satin'], muslo: [NEGRO, 'gloss'], rodilla: ['#F2C230', 'gold'], espinillera: [NEGRO, 'carbon'], bota: ['#F2C230', 'gold'],
     },
     p: {
-      pecho: (c, W, H) => { vinilo(c, W, H, { x: 0.5, y: 0.5, r: 0.46 }); wMono(c, W, H, { color: NEGRO, y: 0.5, s: 0.22 }); },
-      mochila: (c, W, H) => { texto(c, W, H, 'W SOUND', { size: H * 0.16, color: ORO, y: 0.3, maxW: 0.86 }); c.fillStyle = ROJO; c.fillRect(W * 0.3, H * 0.44, W * 0.4, H * 0.012); texto(c, W, H, 'MEDELLÍN', { size: H * 0.07, color: BLANCO, y: 0.56, font: 'JetBrains Mono', weight: 700, maxW: 0.6 }); },
+      // héroe: el vinilo con la W grande en la etiqueta dorada
+      pecho: (c, W, H) => { vinilo(c, W, H, { x: 0.5, y: 0.5, r: 0.46 }); wMono(c, W, H, { color: NEGRO, y: 0.5, s: 0.28 }); },
+      // héroe: W SOUND; debajo, un filete y MEDELLÍN pequeños en el mismo oro
+      mochila: (c, W, H) => { texto(c, W, H, 'W SOUND', { size: H * 0.18, color: ORO, y: 0.34, maxW: 0.86 }); c.fillStyle = ORO; c.fillRect(W * 0.34, H * 0.49, W * 0.32, H * 0.01); texto(c, W, H, 'MEDELLÍN', { size: H * 0.06, color: 'rgba(232,194,122,.7)', y: 0.58, font: 'JetBrains Mono', weight: 700, maxW: 0.5 }); },
       muslo: (c, W, H) => vertical(c, W, H, 'WESTCOL', { size: W * 0.46, color: ORO }),
       antebrazo: (c, W, H) => { c.fillStyle = ORO; c.fillRect(0, H * 0.08, W, H * 0.03); c.fillRect(0, H * 0.89, W, H * 0.03); },
-      espinillera: (c, W, H) => { c.fillStyle = ORO; c.fillRect(W * 0.08, H * 0.04, W * 0.84, H * 0.02); },
     },
     glow: {},
   },
   {
+    // negro mate-satinado de punta a punta; el verde Kick solo arriba (casco), abajo (botas) y en el logo. Sin cromo.
     nombre: 'KICK', acento: KICK, visor: KICK,
-    idea: 'Su casa es Kick: negro satinado, verde Kick en casco, antebrazos y botas, el logo de Kick grande en el pecho y su canal en la espalda.',
-    paleta: [NEGRO, KICK, '#1A1C1F', BLANCO, CROMO],
+    idea: 'Su casa es Kick: negro satinado de punta a punta y el verde de la marca solo en casco, botas y el logo oficial, grande y solo, en el pecho.',
+    paleta: [NEGRO, KICK, '#1A1C1F', BLANCO],
     z: {
       casco: [KICK, 'gloss'], coronilla: [NEGRO, 'gloss'], pecho: [NEGRO, 'satin'], pecho_inf: ['#1A1C1F', 'matte'],
-      mochila: [NEGRO, 'satin'], hombro: [CROMO, 'chrome'], brazo: [NEGRO, 'satin'], antebrazo: [KICK, 'gloss'],
-      cadera: ['#1A1C1F', 'matte'], muslo: [NEGRO, 'satin'], rodilla: [CROMO, 'chrome'], espinillera: ['#1A1C1F', 'carbon'], bota: [KICK, 'gloss'],
+      mochila: [NEGRO, 'satin'], hombro: [NEGRO, 'gloss'], brazo: [NEGRO, 'satin'], antebrazo: [NEGRO, 'gloss'],
+      cadera: ['#1A1C1F', 'matte'], muslo: [NEGRO, 'satin'], rodilla: [NEGRO, 'gloss'], espinillera: ['#1A1C1F', 'carbon'], bota: [KICK, 'gloss'],
     },
     p: {
       pecho: (c, W, H) => kickLogo(c, W, H, { y: 0.5, w: 0.84 }),
-      mochila: (c, W, H) => { wMono(c, W, H, { color: KICK, y: 0.36, s: 0.42 }); texto(c, W, H, 'kick.com/westcol', { size: H * 0.075, color: BLANCO, y: 0.78, maxW: 0.86, font: 'JetBrains Mono', weight: 700 }); },
-      muslo: (c, W, H) => vertical(c, W, H, 'WESTCOL', { size: W * 0.5, color: KICK }),
-      espinillera: (c, W, H) => { c.fillStyle = KICK; c.fillRect(W * 0.08, H * 0.04, W * 0.84, H * 0.025); },
+      muslo: (c, W, H) => vertical(c, W, H, 'WESTCOL', { size: W * 0.46, color: BLANCO }),
     },
     glow: { pecho: true },
   },
   {
+    // rosa manda; negro solo en muñequeras, cinturón y caña de la bota; dorado solo en filetes y hebilla.
     nombre: 'KID W', acento: '#F49AC1', visor: '#FF2A2A',
-    idea: 'Inspirado en el pequeño Buu: piel rosa con los agujeros de vapor en pecho y espalda, muñequeras negras con filete dorado, pantalón blanco amplio, cinturón negro con hebilla dorada y la W, y botas café dorado con caña negra.',
-    paleta: ['#F49AC1', '#0B0B0D', '#E8B53A', '#F2F2F0', '#A8661C'],
+    idea: 'Inspirado en el pequeño Buu: piel rosa, muñequeras negras con filete dorado, cinturón negro con hebilla dorada de la W y pantalón blanco amplio. Botas café con caña negra.',
+    paleta: ['#F49AC1', NEGRO, '#E8B53A', BLANCO, '#A8661C'],
     z: {
-      casco: ['#F49AC1', 'gloss'], coronilla: ['#F49AC1', 'gloss'], pecho: ['#F49AC1', 'gloss'], pecho_inf: ['#F49AC1', 'gloss'],
-      mochila: ['#F49AC1', 'gloss'], hombro: ['#F49AC1', 'pearl'], brazo: ['#F49AC1', 'gloss'], antebrazo: ['#1A1A1C', 'satin'],
-      cadera: ['#0B0B0D', 'satin'], muslo: ['#F2F2F0', 'satin'], rodilla: ['#F2F2F0', 'satin'], espinillera: ['#F2F2F0', 'satin'], bota: ['#A8661C', 'gloss'],
+      casco: ['#F49AC1', 'gloss'], coronilla: ['#F49AC1', 'gloss'], pecho: ['#F49AC1', 'gloss'], pecho_inf: [NEGRO, 'satin'],
+      mochila: ['#F49AC1', 'gloss'], hombro: ['#F49AC1', 'pearl'], brazo: ['#F49AC1', 'gloss'], antebrazo: [NEGRO, 'satin'],
+      cadera: [NEGRO, 'satin'], muslo: [BLANCO, 'satin'], rodilla: [BLANCO, 'satin'], espinillera: [BLANCO, 'satin'], bota: ['#A8661C', 'gloss'],
     },
     p: {
-      // agujeros de vapor: dos arcos de puntos bajo los hombros
-      pecho: (c, W, H) => { c.save(); c.fillStyle = '#3A1020'; for (const sx of [-1, 1]) for (let k = 0; k < 4; k++) { const x = W * (0.5 + sx * (0.16 + k * 0.07)), y = H * (0.14 + k * k * 0.012); c.beginPath(); c.ellipse(x, y, W * 0.018, H * 0.014, 0, 0, Math.PI * 2); c.fill(); } c.restore(); },
-      mochila: (c, W, H) => { c.save(); c.fillStyle = '#3A1020'; for (const sx of [-1, 1]) for (let k = 0; k < 5; k++) { c.beginPath(); c.arc(W * (0.5 + sx * 0.14), H * (0.2 + k * 0.13), Math.min(W, H) * 0.028, 0, Math.PI * 2); c.fill(); } c.restore(); },
+      // héroe: la hebilla dorada con la W, al pie del pecho, justo encima del cinturón negro (torso inferior)
+      pecho: (c, W, H) => { const g = c.createLinearGradient(0, H * 0.62, 0, H * 0.94); g.addColorStop(0, '#F7D25A'); g.addColorStop(1, '#C98E1E'); c.fillStyle = g; c.beginPath(); c.roundRect(W * 0.36, H * 0.62, W * 0.28, H * 0.32, W * 0.03); c.fill(); c.lineWidth = W * 0.012; c.strokeStyle = NEGRO; c.stroke(); wMono(c, W, H, { color: NEGRO, y: 0.78, s: 0.2 }); },
+      // héroe: la W negra grande con vapor de cómic, el guiño a Buu enojado
+      mochila: (c, W, H) => { vapor(c, W, H, 'rgba(255,255,255,.9)', 4, 5); wMono(c, W, H, { color: NEGRO, y: 0.5, s: 0.5 }); },
       antebrazo: (c, W, H) => { c.fillStyle = '#E8B53A'; c.fillRect(0, H * 0.02, W, H * 0.06); c.fillRect(0, H * 0.92, W, H * 0.06); },
-      cadera: (c, W, H) => { const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#F7D25A'); g.addColorStop(1, '#C98E1E'); c.fillStyle = g; c.beginPath(); c.moveTo(W * 0.32, H * 0.08); c.lineTo(W * 0.68, H * 0.08); c.lineTo(W * 0.6, H * 0.92); c.lineTo(W * 0.4, H * 0.92); c.closePath(); c.fill(); wMono(c, W, H, { color: '#0B0B0D', y: 0.42, s: 0.42 }); },
-      muslo: (c, W, H) => { c.save(); c.strokeStyle = 'rgba(120,128,140,.35)'; c.lineWidth = W * 0.025; for (let k = 0.18; k < 1; k += 0.16) { c.beginPath(); c.moveTo(W * k, 0); c.bezierCurveTo(W * (k + 0.08), H * 0.3, W * (k - 0.06), H * 0.65, W * (k + 0.03), H); c.stroke(); } c.restore(); },
-      espinillera: (c, W, H) => { c.save(); c.strokeStyle = 'rgba(120,128,140,.35)'; c.lineWidth = W * 0.03; for (let k = 0.25; k < 1; k += 0.25) { c.beginPath(); c.moveTo(W * k, 0); c.quadraticCurveTo(W * (k + 0.07), H * 0.5, W * k, H * 0.85); c.stroke(); } c.restore(); },
-      bota: (c, W, H) => { c.fillStyle = '#0B0B0D'; c.fillRect(0, 0, W, H * 0.34); c.fillStyle = '#E8B53A'; c.fillRect(0, H * 0.34, W, H * 0.08); },
+      // pliegues suaves del pantalón amplio (sin héroe: es tela)
+      muslo: (c, W, H) => { c.save(); c.strokeStyle = 'rgba(120,128,140,.3)'; c.lineWidth = W * 0.025; for (let k = 0.22; k < 1; k += 0.2) { c.beginPath(); c.moveTo(W * k, 0); c.bezierCurveTo(W * (k + 0.08), H * 0.3, W * (k - 0.06), H * 0.65, W * (k + 0.03), H); c.stroke(); } c.restore(); },
+      bota: (c, W, H) => { c.fillStyle = NEGRO; c.fillRect(0, 0, W, H * 0.34); c.fillStyle = '#E8B53A'; c.fillRect(0, H * 0.34, W, H * 0.05); },
     },
     glow: {},
   },
   {
-    nombre: 'G WAGON', acento: '#FFD9A0', visor: '#FFD9A0',
-    idea: 'Su G Wagon hecha piel: acero gastado y rayado en todo el cuerpo, remaches en los bordes de cada panel, cruces góticas negras en muslos, pecho y espalda, carbono forjado como el capó y negro mate como los rines.',
-    paleta: ['#9EA1A7', '#0B0B0D', '#2A2B2E', '#C9CCD1', '#FFD9A0'],
+    // acero gastado manda; negro mate en brazos, cadera y botas (los rines); carbono en coronilla y torso inferior.
+    nombre: 'G WAGON', acento: '#C9CCD1', visor: '#FFD9A0',
+    idea: 'Su G Wagon personalizada hecha piel: acero gastado con remaches en el borde de cada panel grande y una cruz gótica negra como sello. Carbono forjado como el capó y negro mate como los rines.',
+    paleta: ['#C3C6CC', NEGRO, '#2A2B2E', '#C9CCD1'],
     z: {
       casco: ['#C3C6CC', 'acero'], coronilla: ['#ffffff', 'carbon'], pecho: ['#C3C6CC', 'acero'], pecho_inf: ['#ffffff', 'carbon'],
-      mochila: ['#C3C6CC', 'acero'], hombro: ['#C3C6CC', 'acero'], brazo: ['#0B0B0D', 'matte'], antebrazo: ['#C3C6CC', 'acero'],
-      cadera: ['#0B0B0D', 'matte'], muslo: ['#C3C6CC', 'acero'], rodilla: ['#C9CCD1', 'chrome'], espinillera: ['#C3C6CC', 'acero'], bota: ['#0B0B0D', 'matte'],
+      mochila: ['#C3C6CC', 'acero'], hombro: ['#C3C6CC', 'acero'], brazo: [NEGRO, 'matte'], antebrazo: ['#C3C6CC', 'acero'],
+      cadera: [NEGRO, 'matte'], muslo: ['#C3C6CC', 'acero'], rodilla: ['#C9CCD1', 'chrome'], espinillera: ['#C3C6CC', 'acero'], bota: [NEGRO, 'matte'],
     },
     p: {
-      pecho: (c, W, H) => { remaches(c, W, H, 0.05, 16); cruzGotica(c, W * 0.5, H * 0.52, H * 0.3); },
-      mochila: (c, W, H) => { remaches(c, W, H, 0.05, 12); cruzGotica(c, W * 0.5, H * 0.55, H * 0.36); },
-      muslo: (c, W, H) => { remaches(c, W, H, 0.07, 10); cruzGotica(c, W * 0.5, H * 0.32, W * 0.3); cruzGotica(c, W * 0.5, H * 0.72, W * 0.22); },
-      espinillera: (c, W, H) => remaches(c, W, H, 0.07, 10),
-      antebrazo: (c, W, H) => remaches(c, W, H, 0.08, 8),
+      // una sola cruz por panel; la de la espalda es la más grande (el héroe de la pieza)
+      pecho: (c, W, H) => { remaches(c, W, H, 0.05, 14); cruzGotica(c, W * 0.5, H * 0.52, H * 0.28); },
+      mochila: (c, W, H) => { remaches(c, W, H, 0.05, 12); cruzGotica(c, W * 0.5, H * 0.52, H * 0.38); },
+      muslo: (c, W, H) => { remaches(c, W, H, 0.07, 10); cruzGotica(c, W * 0.5, H * 0.45, Math.min(W * 0.3, H * 0.25)); },
+      espinillera: (c, W, H) => remaches(c, W, H, 0.07, 8),
     },
     glow: {},
   },
   {
+    // rojo caramelo manda; el amarillo-naranja solo en los rayos; negro en cadera, espinilleras y botas (las llantas).
     nombre: 'RAYO W', acento: '#FFC400', visor: '#FFC400',
-    idea: 'Inspirado en el coche de carreras rojo más famoso: rojo caramelo brillante, rayos amarillo-naranja en pecho y muslos, hombros amarillos, número de carrera con la W y botas negras como llantas con letras blancas.',
-    paleta: ['#D3121B', '#FFC400', '#FF8A00', '#0B0B0D', '#F2F2F0'],
+    idea: 'Un coche de carreras rojo hecho robot: rojo caramelo brillante con rayos amarillo-naranja en pecho y muslos, y número de carrera con la W en la espalda. Piernas negras como llantas, con letras blancas.',
+    paleta: ['#D3121B', '#FFC400', NEGRO, BLANCO],
     z: {
       casco: ['#D3121B', 'gloss'], coronilla: ['#D3121B', 'gloss'], pecho: ['#D3121B', 'gloss'], pecho_inf: ['#D3121B', 'gloss'],
-      mochila: ['#D3121B', 'gloss'], hombro: ['#FFC400', 'gloss'], brazo: ['#D3121B', 'gloss'], antebrazo: ['#D3121B', 'gloss'],
-      cadera: ['#0B0B0D', 'satin'], muslo: ['#D3121B', 'gloss'], rodilla: ['#C9CCD1', 'chrome'], espinillera: ['#0B0B0D', 'satin'], bota: ['#0B0B0D', 'satin'],
+      mochila: ['#D3121B', 'gloss'], hombro: ['#D3121B', 'gloss'], brazo: ['#D3121B', 'gloss'], antebrazo: ['#D3121B', 'gloss'],
+      cadera: [NEGRO, 'satin'], muslo: ['#D3121B', 'gloss'], rodilla: ['#C9CCD1', 'chrome'], espinillera: [NEGRO, 'satin'], bota: [NEGRO, 'satin'],
     },
     p: {
-      pecho: (c, W, H) => { rayoCarrera(c, W, H, { x: 0.46, y: 0.5, w: 0.86, h: 0.62, rot: -0.08 }); },
-      mochila: (c, W, H) => { numeroCarrera(c, W, H, { y: 0.42, r: 0.3 }); texto(c, W, H, 'W RACING', { size: H * 0.1, color: '#FFC400', y: 0.86, maxW: 0.8 }); },
-      muslo: (c, W, H) => { rayoCarrera(c, W, H, { x: 0.5, y: 0.5, w: 1.6, h: 0.42, rot: Math.PI / 2 }); },
-      antebrazo: (c, W, H) => { c.fillStyle = '#FFC400'; c.fillRect(0, H * 0.82, W, H * 0.06); },
-      espinillera: (c, W, H) => vertical(c, W, H, 'WESTCOL', { size: W * 0.34, color: '#F2F2F0', font: 'JetBrains Mono', weight: 800 }),
-      bota: (c, W, H) => { c.fillStyle = '#F2F2F0'; c.fillRect(0, H * 0.18, W, H * 0.07); c.fillRect(0, H * 0.75, W, H * 0.07); },
+      pecho: (c, W, H) => { rayoCarrera(c, W, H, { x: 0.48, y: 0.5, w: 0.88, h: 0.66, rot: -0.08 }); },
+      mochila: (c, W, H) => { numeroCarrera(c, W, H, { y: 0.44, r: 0.32 }); },
+      muslo: (c, W, H) => { rayoCarrera(c, W, H, { x: 0.5, y: 0.5, w: 1.5, h: 0.46, rot: Math.PI / 2 }); },
+      espinillera: (c, W, H) => vertical(c, W, H, 'WESTCOL', { size: W * 0.34, color: BLANCO, font: 'JetBrains Mono', weight: 800 }),
+      bota: (c, W, H) => { c.fillStyle = BLANCO; c.fillRect(0, H * 0.18, W, H * 0.05); },
     },
     glow: {},
   },
@@ -284,36 +287,36 @@ function cadena(c, W, H, color = '#C5CCD0', y0 = 0.05, depth = 0.4) { // cadena 
 const AZUL_B = '#1F4FE0', CIELO = '#9CC2EE', NEGRO_B = '#0A0A0A', ASFALTO = '#3C3D41', PLATA = '#C5CCD0';
 export const BLESSD_DISENOS = [
   {
+    // negro manda; plata solo en cromo (hombros, rótulas) y en el impreso. Pecho: las siglas son el héroe, la cadena acompaña.
     nombre: 'E.P.H.D.M', acento: '#D1D1D1', visor: '#E8E8E8',
-    idea: 'El Peor Hombre del Mundo: negro trap de punta a punta, las siglas estarcidas con los cuernos sobre la H, vidrio partido y cadena helada en el pecho, cromo en hombros y rótulas, piernas asfalto.',
+    idea: 'El Peor Hombre del Mundo: negro trap de punta a punta, con las siglas estarcidas y los cuernos sobre la H en el pecho. Cadena helada, cromo en hombros y rótulas, vidrio partido en la espalda.',
     paleta: [NEGRO_B, ASFALTO, '#D1D1D1', PLATA],
     z: {
       casco: [NEGRO_B, 'matte'], coronilla: [NEGRO_B, 'gloss'], pecho: [NEGRO_B, 'matte'], pecho_inf: [NEGRO_B, 'matte'],
-      mochila: [NEGRO_B, 'matte'], hombro: [PLATA, 'chrome'], brazo: [NEGRO_B, 'matte'], antebrazo: ['#1E1F22', 'satin'],
-      cadera: [NEGRO_B, 'matte'], muslo: [ASFALTO, 'satin'], rodilla: [PLATA, 'chrome'], espinillera: ['#1A1B1E', 'carbon'], bota: [NEGRO_B, 'matte'],
+      mochila: [NEGRO_B, 'matte'], hombro: [PLATA, 'chrome'], brazo: [NEGRO_B, 'matte'], antebrazo: [NEGRO_B, 'satin'],
+      cadera: [NEGRO_B, 'matte'], muslo: [ASFALTO, 'satin'], rodilla: [PLATA, 'chrome'], espinillera: [NEGRO_B, 'carbon'], bota: [NEGRO_B, 'matte'],
     },
     p: {
-      pecho: (c, W, H) => { grietas(c, W, H, 'rgba(209,209,209,.55)', 7, 0.7, 0.35); cadena(c, W, H, PLATA, 0.02, 0.22); siglas(c, W, H, 'E.P.H.D.M', { y: 0.68, size: H * 0.2, cuernos: true, maxW: 0.86 }); },
-      mochila: (c, W, H) => { siglas(c, W, H, 'EL PEOR', { y: 0.32, size: H * 0.17, maxW: 0.84 }); texto(c, W, H, 'HOMBRE DEL MUNDO', { size: H * 0.065, color: '#D1D1D1', y: 0.52, font: 'JetBrains Mono', weight: 800, maxW: 0.8 }); grietas(c, W, H, 'rgba(209,209,209,.4)', 3, 0.5, 0.8); },
-      muslo: (c, W, H) => vertical(c, W, H, 'EL PEOR', { size: W * 0.5, color: '#D1D1D1' }),
-      espinillera: (c, W, H) => { c.fillStyle = '#D1D1D1'; c.fillRect(W * 0.08, H * 0.04, W * 0.84, H * 0.012); },
+      pecho: (c, W, H) => { cadena(c, W, H, PLATA, 0.02, 0.18); siglas(c, W, H, 'E.P.H.D.M', { y: 0.64, size: H * 0.24, cuernos: true, maxW: 0.9 }); },
+      mochila: (c, W, H) => { grietas(c, W, H, 'rgba(209,209,209,.28)', 3, 0.5, 0.5); siglas(c, W, H, 'EL PEOR', { y: 0.4, size: H * 0.18, maxW: 0.84 }); texto(c, W, H, 'HOMBRE DEL MUNDO', { size: H * 0.06, color: '#D1D1D1', y: 0.58, font: 'JetBrains Mono', weight: 800, maxW: 0.76 }); },
+      muslo: (c, W, H) => vertical(c, W, H, 'BLESSD', { size: W * 0.5, color: '#D1D1D1' }),
     },
     glow: {},
   },
   {
-    nombre: 'E.M.H.D.M', acento: AZUL_B, visor: AZUL_B,
-    idea: 'El Mejor Hombre del Mundo: el azul de su pelo en casco, brazos y cadera, blanco y cielo como la portada, las siglas con el halo encima de la H en el pecho y el nombre completo en la espalda.',
+    // el azul de Blessd manda (casco, torso, espalda, brazos, botas); blanco de segundo; cielo solo en halo y espinilleras.
+    nombre: 'E.M.H.D.M', acento: AZUL_B, visor: CIELO,
+    idea: 'El Mejor Hombre del Mundo: el azul de Blessd de punta a punta, con las siglas blancas y el halo cielo sobre la H en el pecho. Piernas blancas y espinilleras cielo, como la portada.',
     paleta: [AZUL_B, BLANCO, CIELO, PLATA],
     z: {
-      casco: [AZUL_B, 'gloss'], coronilla: [AZUL_B, 'pearl'], pecho: [BLANCO, 'gloss'], pecho_inf: [AZUL_B, 'gloss'],
-      mochila: [BLANCO, 'gloss'], hombro: [AZUL_B, 'pearl'], brazo: [AZUL_B, 'gloss'], antebrazo: [BLANCO, 'gloss'],
-      cadera: [AZUL_B, 'satin'], muslo: [BLANCO, 'gloss'], rodilla: [PLATA, 'chrome'], espinillera: [CIELO, 'gloss'], bota: [BLANCO, 'gloss'],
+      casco: [AZUL_B, 'gloss'], coronilla: [AZUL_B, 'pearl'], pecho: [AZUL_B, 'gloss'], pecho_inf: [BLANCO, 'gloss'],
+      mochila: [AZUL_B, 'gloss'], hombro: [BLANCO, 'pearl'], brazo: [AZUL_B, 'gloss'], antebrazo: [BLANCO, 'gloss'],
+      cadera: [BLANCO, 'satin'], muslo: [BLANCO, 'gloss'], rodilla: [PLATA, 'chrome'], espinillera: [CIELO, 'gloss'], bota: [AZUL_B, 'gloss'],
     },
     p: {
-      pecho: (c, W, H) => siglas(c, W, H, 'E.M.H.D.M', { y: 0.6, size: H * 0.22, color: AZUL_B, halo: true, haloColor: '#E8C27A', maxW: 0.86 }),
-      mochila: (c, W, H) => { c.save(); c.strokeStyle = '#E8C27A'; c.lineWidth = H * 0.018; c.beginPath(); c.ellipse(W / 2, H * 0.14, W * 0.18, H * 0.04, 0, 0, Math.PI * 2); c.stroke(); c.restore(); siglas(c, W, H, 'EL MEJOR', { y: 0.36, size: H * 0.15, color: AZUL_B, maxW: 0.84 }); texto(c, W, H, 'HOMBRE DEL MUNDO', { size: H * 0.065, color: AZUL_B, y: 0.55, font: 'JetBrains Mono', weight: 800, maxW: 0.8 }); },
+      pecho: (c, W, H) => siglas(c, W, H, 'E.M.H.D.M', { y: 0.62, size: H * 0.24, color: BLANCO, halo: true, haloColor: CIELO, maxW: 0.9, gastado: false }),
+      mochila: (c, W, H) => { siglas(c, W, H, 'EL MEJOR', { y: 0.4, size: H * 0.18, color: BLANCO, halo: false, maxW: 0.84, gastado: false }); texto(c, W, H, 'HOMBRE DEL MUNDO', { size: H * 0.06, color: CIELO, y: 0.58, font: 'JetBrains Mono', weight: 800, maxW: 0.76 }); },
       muslo: (c, W, H) => vertical(c, W, H, 'BLESSD', { size: W * 0.5, color: AZUL_B }),
-      bota: (c, W, H) => { c.fillStyle = AZUL_B; c.fillRect(0, H * 0.74, W, H * 0.12); },
     },
     glow: {},
   },
