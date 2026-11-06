@@ -77,6 +77,15 @@ function franjaPixel(c, x, y, w, h, color, espejo = false) {
 }
 // hilera de bloques que se apagan, como un medidor de señal
 function pixeles(c, w, y, y2, color) { const n = 12, p = w * 0.045, g = (w * 0.8 - n * p) / (n - 1); c.save(); c.fillStyle = color; for (let i = 0; i < n; i++) { c.globalAlpha = 1 - i / n * 0.85; c.fillRect(w * 0.1 + i * (p + g), y2, p, p); } c.restore(); }
+// rayo con contorno blanco por fuera (se lee desde lejos sobre el rojo)
+function rayoPro(c, w, h, o) {
+  c.save(); c.shadowColor = 'rgba(0,0,0,.35)'; c.shadowBlur = Math.min(w, h) * 0.02;
+  rayoCarrera(c, w, h, { ...o, w: o.w * 1.06, h: o.h * 1.08 }); c.restore();
+  c.save(); c.globalCompositeOperation = 'source-atop'; c.fillStyle = BLANCO; c.fillRect(0, 0, w, h); c.restore(); // halo blanco
+  rayoCarrera(c, w, h, o);
+}
+function estelas(c, w, h, y0, y1, n) { c.save(); c.lineCap = 'round'; for (let i = 0; i < n; i++) { const y = h * (y0 + (y1 - y0) * i / (n - 1)), L = w * (0.18 + 0.22 * ((i * 37) % 5) / 5); c.strokeStyle = `rgba(242,242,240,${0.25 + 0.12 * (i % 3)})`; c.lineWidth = h * 0.012; c.beginPath(); c.moveTo(w * 0.02, y); c.lineTo(w * 0.02 + L, y); c.stroke(); } c.restore(); }
+function cuadros(c, x, y, w, h, nx, ny) { const cw = w / nx, ch = h / ny; for (let i = 0; i < nx; i++) for (let j = 0; j < ny; j++) { c.fillStyle = (i + j) % 2 ? NEGRO : BLANCO; c.fillRect(x + i * cw, y + j * ch, cw + 0.5, ch + 0.5); } }
 function puntos(c, lista, r, color) { c.save(); c.fillStyle = color; for (const [x, y] of lista) { c.beginPath(); c.ellipse(x, y, r, r * 0.8, 0, 0, Math.PI * 2); c.fill(); } c.restore(); }
 function pliegues(c, w, h, color = 'rgba(110,118,130,.32)') {
   c.save(); c.strokeStyle = color; c.lineCap = 'round'; c.lineWidth = w * 0.035;
@@ -136,11 +145,13 @@ export const IMPRESOS = {
     antebrazo: (c, W, H) => { for (const y of [0.12, 0.88]) filaRemaches(c, W * 0.05, H * y, W * 0.95, H * y, 6, Math.min(W, H) * 0.035); },
   },
   'RAYO W': {
-    pecho: en('pecho', (c, w, h) => rayoCarrera(c, w, h, { x: 0.5, y: 0.5, w: 0.96, h: 0.86, rot: -0.04 })),
-    mochila: en('mochila', (c, w, h) => rayoCarrera(c, w, h, { x: 0.5, y: 0.5, w: 0.96, h: 0.6, rot: -0.1 })),
-    muslo: en('muslo', (c, w, h) => rayoCarrera(c, w, h, { x: 0.5, y: 0.5, w: 1.0, h: 0.6, rot: -Math.PI / 2 })),
-    espinillera: en('espinillera', (c, w, h) => vertical(c, w, h, 'WESTCOL', { font: 'JetBrains Mono', weight: 800, color: BLANCO, track: 8 })),
-    bota: (c, W, H) => { c.fillStyle = BLANCO; c.fillRect(0, H * 0.2, W, H * 0.05); },
+    // decoración de carreras: un rayo protagonista por panel, con contorno blanco y estelas de velocidad
+    pecho: en('pecho', (c, w, h) => { estelas(c, w, h, 0.18, 0.5, 5); rayoPro(c, w, h, { x: 0.52, y: 0.52, w: 1.02, h: 0.92, rot: -0.1 }); }),
+    mochila: en('mochila', (c, w, h) => { estelas(c, w, h, 0.12, 0.6, 7); rayoPro(c, w, h, { x: 0.5, y: 0.5, w: 1.0, h: 0.62, rot: -0.22 }); }),
+    muslo: en('muslo', (c, w, h) => rayoPro(c, w, h, { x: 0.5, y: 0.52, w: 1.0, h: 0.62, rot: -Math.PI / 2 })),
+    espinillera: en('espinillera', (c, w, h) => { cuadros(c, 0, 0, w, h * 0.12, 6, 2); c.save(); c.translate(0, h * 0.16); vertical(c, w, h * 0.84, 'WESTCOL', { font: 'JetBrains Mono', weight: 800, color: BLANCO, track: 8 }); c.restore(); }),
+    antebrazo: (c, W, H) => { c.fillStyle = '#FFC400'; c.fillRect(0, H * 0.1, W, H * 0.07); c.fillStyle = '#FF8A00'; c.fillRect(0, H * 0.19, W, H * 0.035); },
+    bota: (c, W, H) => { c.fillStyle = BLANCO; c.fillRect(0, H * 0.2, W, H * 0.05); c.fillStyle = '#D3121B'; c.fillRect(0, H * 0.27, W, H * 0.025); },
   },
   'E.P.H.D.M': {
     // la cadena cuelga del cuello; las siglas con cuernos son el héroe del peto
@@ -163,14 +174,7 @@ export const IMPRESOS = {
   },
   'CAMPEÓN': {
     pecho: en('pecho', (c, w, h) => acolchado(c, w, h)),
-    mochila: en('mochila', (c, w, h) => {
-      arco(c, w, h, 'WESTCOL', { y: 0.24, radio: 0.75, size: 0.17, color: '#D4AF6A', borde: '#2A0710' });
-      ajustado(c, w, h, 'CAMPEÓN', { font: 'JetBrains Mono', weight: 800, color: '#F1E6D2', y: 0.5, fitW: 0.5, fitH: 0.06, track: 30 });
-      c.fillStyle = '#D4AF6A'; c.fillRect(w * 0.3, h * 0.56, w * 0.4, h * 0.006);
-      acolchado(c, w, h * 0.3, 'rgba(212,175,106,.3)', 0.22); // ruedo acolchado abajo
-    }),
-    // placa del cinturón de campeón
-    pecho_inf: (c, W, H) => { const g = c.createLinearGradient(0, H * 0.2, 0, H * 0.8); g.addColorStop(0, '#F7DC8A'); g.addColorStop(0.5, '#C9973A'); g.addColorStop(1, '#8A6420'); c.fillStyle = g; c.beginPath(); c.ellipse(W / 2, H / 2, W * 0.2, H * 0.32, 0, 0, Math.PI * 2); c.fill(); c.lineWidth = W * 0.012; c.strokeStyle = '#5A3E10'; c.stroke(); c.beginPath(); c.ellipse(W / 2, H / 2, W * 0.15, H * 0.24, 0, 0, Math.PI * 2); c.stroke(); c.fillStyle = '#5A3E10'; c.beginPath(); c.moveTo(W * 0.45, H * 0.56); c.lineTo(W * 0.45, H * 0.42); c.lineTo(W * 0.475, H * 0.49); c.lineTo(W * 0.5, H * 0.4); c.lineTo(W * 0.525, H * 0.49); c.lineTo(W * 0.55, H * 0.42); c.lineTo(W * 0.55, H * 0.56); c.closePath(); c.fill(); },
+    mochila: en('mochila', (c, w, h) => acolchado(c, w, h)),
     // pantaloneta: pretina dorada y franja lateral
     muslo: (c, W, H) => { c.fillStyle = '#D4AF6A'; c.fillRect(W * 0.1, H * 0.06, W * 0.8, H * 0.05); c.fillStyle = '#F1E6D2'; c.fillRect(W * 0.1, H * 0.11, W * 0.8, H * 0.012); c.fillStyle = '#D4AF6A'; c.fillRect(W * 0.18, H * 0.11, W * 0.05, H * 0.42); c.fillRect(W * 0.77, H * 0.11, W * 0.05, H * 0.42); },
     // botas altas: cordones cruzados al centro

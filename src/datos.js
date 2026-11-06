@@ -241,7 +241,7 @@ export const WESTCOL_DISENOS = [
     paleta: ['#D3121B', '#FFC400', NEGRO, BLANCO],
     z: {
       casco: ['#D3121B', 'gloss'], coronilla: ['#D3121B', 'gloss'], pecho: ['#D3121B', 'gloss'], pecho_inf: ['#D3121B', 'gloss'],
-      mochila: ['#D3121B', 'gloss'], hombro: ['#D3121B', 'gloss'], brazo: ['#D3121B', 'gloss'], antebrazo: ['#D3121B', 'gloss'],
+      mochila: ['#D3121B', 'gloss'], hombro: ['#FFC400', 'gloss'], brazo: ['#D3121B', 'gloss'], antebrazo: ['#D3121B', 'gloss'],
       cadera: [NEGRO, 'satin'], muslo: ['#D3121B', 'gloss'], rodilla: ['#C9CCD1', 'chrome'], espinillera: [NEGRO, 'satin'], bota: [NEGRO, 'satin'],
     },
     p: {
