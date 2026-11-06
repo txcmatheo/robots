@@ -1,5 +1,9 @@
 name: Publicar en GitHub Pages
 
+# Publica dos versiones separadas:
+#   /robots/v1/  versión del estudio (etiqueta v1-estudio)
+#   /robots/v2/  versión del ring de Stream Fighters (esta rama)
+#   /robots/     la más reciente (la del ring)
 on:
   push:
     branches: [main]
@@ -23,13 +27,29 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
-      - run: npm run build
-      - run: touch dist/.nojekyll
+      - name: Versión actual (ring)
+        run: |
+          npm ci
+          npm run build
+          mkdir -p sitio/v2
+          cp -r dist/. sitio/
+          cp -r dist/. sitio/v2/
+      - uses: actions/checkout@v4
+        with:
+          ref: v1-estudio
+          path: v1src
+      - name: Versión 1 (estudio)
+        working-directory: v1src
+        run: |
+          npm ci
+          npm run build
+          mkdir -p ../sitio/v1
+          cp -r dist/. ../sitio/v1/
+      - run: touch sitio/.nojekyll
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: sitio
 
   deploy:
     needs: build

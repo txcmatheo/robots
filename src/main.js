@@ -234,7 +234,7 @@ function vestir(robot, modo, anim = false) {
           if (m.userData.wy < st.y) { done.add(m); vestirParte(robot, m, piel, modo); flash(m, art.acento); }
         }
       },
-      onComplete: () => { scanFx.hide(); aplicarDecals(robot, piel, modo); res(); if (S.mode === 'garage' && robot === robots[S.idx] && modo !== 'fabrica') anotar(); },
+      onComplete: () => { scanFx.hide(); aplicarDecals(robot, piel, modo); res(); if (S.mode === 'garage' && robot === robots[S.idx] && modo !== 'fabrica' && !isNarrow()) anotar(); },
     });
   });
 }
@@ -292,6 +292,28 @@ function beamMat(color) {
 
 const robots = []; const stands = [];
 const POS = [-0.95, 0.95];
+// posturas de guardia sobre el esqueleto del T800 (marco local: X adelante, Y arriba, Z lateral; izquierda = -Z).
+// [rotX (roll), rotY (yaw), rotZ (pitch: + lleva el miembro hacia adelante)]
+const POSES = {
+  // Westcol: guardia alta y abierta, como los T800 en el ring: brazos al frente, codos afuera, puños a la altura de la cara
+  westcol: {
+    J_LINK_WAIST_YAW: [0, 0.22, 0.14], J_LINK_HEAD_PITCH: [0, -0.12, -0.12],
+    J_LINK_SHOULDER_PITCH_L: [0, 0, 1.32], J_LINK_SHOULDER_ROLL_L: [0.24, 0, 0], J_LINK_ELBOW_PITCH_L: [0, 0, 1.2],
+    J_LINK_SHOULDER_PITCH_R: [0, 0, 1.12], J_LINK_SHOULDER_ROLL_R: [-0.28, 0, 0], J_LINK_ELBOW_PITCH_R: [0, 0, 1.5],
+    J_LINK_HIP_ROLL_L: [0.15, 0, 0], J_LINK_HIP_ROLL_R: [-0.15, 0, 0], J_LINK_ANKLE_ROLL_L: [-0.15, 0, 0], J_LINK_ANKLE_ROLL_R: [0.15, 0, 0],
+    J_LINK_HIP_PITCH_L: [0, 0, 0.55], J_LINK_KNEE_PITCH_L: [0, 0, -0.95], J_LINK_ANKLE_PITCH_L: [0, 0, 0.4],
+    J_LINK_HIP_PITCH_R: [0, 0, 0.2], J_LINK_KNEE_PITCH_R: [0, 0, -0.85], J_LINK_ANKLE_PITCH_R: [0, 0, 0.65],
+  },
+  // Blessd: más agachado y agresivo, el torso encima del rival
+  blessd: {
+    J_LINK_WAIST_YAW: [0, -0.28, 0.3], J_LINK_HEAD_PITCH: [0, 0.1, -0.2],
+    J_LINK_SHOULDER_PITCH_R: [0, 0, 1.25], J_LINK_SHOULDER_ROLL_R: [-0.2, 0, 0], J_LINK_ELBOW_PITCH_R: [0, 0, 1.35],
+    J_LINK_SHOULDER_PITCH_L: [0, 0, 1.05], J_LINK_SHOULDER_ROLL_L: [0.26, 0, 0], J_LINK_ELBOW_PITCH_L: [0, 0, 1.65],
+    J_LINK_HIP_ROLL_L: [0.18, 0, 0], J_LINK_HIP_ROLL_R: [-0.18, 0, 0], J_LINK_ANKLE_ROLL_L: [-0.18, 0, 0], J_LINK_ANKLE_ROLL_R: [0.18, 0, 0],
+    J_LINK_HIP_PITCH_R: [0, 0, 0.7], J_LINK_KNEE_PITCH_R: [0, 0, -1.2], J_LINK_ANKLE_PITCH_R: [0, 0, 0.5],
+    J_LINK_HIP_PITCH_L: [0, 0, 0.3], J_LINK_KNEE_PITCH_L: [0, 0, -1.15], J_LINK_ANKLE_PITCH_L: [0, 0, 0.85],
+  },
+};
 // Stream Fighters 5: Westcol en la esquina roja, Blessd en la azul
 const ESQUINA = [{ nombre: 'ESQUINA ROJA', color: '#ff3d50' }, { nombre: 'ESQUINA AZUL', color: '#5b7cff' }];
 // cuenta regresiva a la pelea: 14 de noviembre de 2026, 6:00 p. m. hora de Bogotá
@@ -358,6 +380,8 @@ async function cargarEntregas() {
     // Westcol usa su colección propia (W Sound, Kid W, En vivo); el resto, la del JSON
     // las colecciones se definen en datos.js; de Blessd se conserva SIEMPRE BLESSD del JSON
     const propios = art.id === 'westcol' ? WESTCOL_DISENOS : art.id === 'blessd' ? [...BLESSD_DISENOS, ...BLESSD_EXTRA, ...conceptos.filter(c => c.nombre === 'SIEMPRE BLESSD')] : null;
+    // diseño inicial de cada uno: Kid W para Westcol, E.M.H.D.M para Blessd (van primeros en su colección)
+    const INICIAL = { westcol: 'KID W', blessd: 'E.M.H.D.M' }; if (propios) { const k = propios.findIndex(x => x.nombre === INICIAL[art.id]); if (k > 0) propios.unshift(...propios.splice(k, 1)); }
     art.conceptos = propios ? propios.map((x, k) => ({ ...x, p: IMPRESOS[x.nombre] || x.p, z: { ...FABRICA, ...x.z }, id: String.fromCharCode(65 + k) })) : conceptos;
     if (files.logo) art.logo = d(files.logo);
     if (files.logoWebp) art.logoWebp = d(files.logoWebp);
@@ -395,9 +419,12 @@ function aFloat(geo, mat4) {
   out.setIndex(geo.index ? Array.from(geo.index.array) : [...Array(geo.attributes.position.count).keys()]);
   out.applyMatrix4(mat4); return out;
 }
-function plantilla(src, mapas = []) {
+function plantilla(src, mapas = [], pose = null) {
   let PLANTILLA;
-  const g = src.clone(true); g.updateMatrixWorld(true);
+  const g = src.clone(true);
+  // postura de pelea: se gira cada articulación del esqueleto oficial antes de fusionar (queda horneada en la geometría)
+  if (pose) g.traverse(n => { const p = pose[n.name]; if (!p) return; if (p[0]) n.rotateX(p[0]); if (p[1]) n.rotateY(p[1]); if (p[2]) n.rotateZ(p[2]); });
+  g.updateMatrixWorld(true);
   const box = new THREE.Box3().setFromObject(g);
   g.position.set(-(box.min.x + box.max.x) / 2, -box.min.y, -(box.min.z + box.max.z) / 2); g.updateMatrixWorld(true);
   const grupos = new Map(); const tmpB = new THREE.Box3(), wc = new THREE.Vector3();
@@ -428,7 +455,7 @@ function matDe(mats, m) {
 function robotDesdeGLB(art, src) {
   const mapas = art.conceptos.map(c => c.mats).filter(Boolean);
   const root = new THREE.Group(); root.name = art.id; const body = new THREE.Group(); root.add(body);
-  const T = plantilla(src, mapas); const C = V(0, T.H * 0.58, 0); const parts = [];
+  const T = plantilla(src, mapas, null); const C = V(0, T.H * 0.58, 0); const parts = [];
   for (const gr of T.grupos) {
     const m = new THREE.Mesh(gr.geo, gr.mat); m.name = gr.nombres[0]; m.position.copy(gr.c); body.add(m);
     const zona = gr.zona; const libre = !!ZONAS[zona]?.libre; const wc = gr.c;
@@ -443,6 +470,60 @@ function robotDesdeGLB(art, src) {
   root.userData = { art, parts, body, explode: 0, xray: false, modo: null, off: T.off };
   return root;
 }
+// ===== ACTORES DE LA INTRO =====
+// Para caminar y ponerse en guardia hace falta el esqueleto: durante la intro se usa una copia articulada del
+// modelo oficial (con la piel en colores); al terminar se cambia por los robots fusionados, de pie normal.
+let SRC = null;
+const actores = [];
+const _e = new THREE.Euler(), _q = new THREE.Quaternion(), _p = new THREE.Vector3();
+function crearActor(art, i) {
+  const root = new THREE.Group(); const g = SRC.clone(true); root.add(g); g.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(g);
+  g.position.set(-(box.min.x + box.max.x) / 2, -box.min.y, -(box.min.z + box.max.z) / 2);
+  const joints = {}; const mallas = [];
+  g.traverse(o => {
+    if (/^J_/.test(o.name)) { joints[o.name] = o; o.userData.q0 = o.quaternion.clone(); }
+    if (o.isMesh) { if (Array.isArray(o.material)) o.material = o.material[0]; o.castShadow = true; mallas.push(o); o.userData.factoryMat = o.material; o.userData.zona = zonaDe(o.name) || zonaDe(o.parent?.name) || 'articulacion'; }
+  });
+  root.updateMatrixWorld(true);
+  const pieY0 = Math.min(joints.J_LINK_FOOT_L.getWorldPosition(_p).y, joints.J_LINK_FOOT_R.getWorldPosition(_p).y);
+  root.visible = false; scene.add(root);
+  const a = { root, g, joints, mallas, art, i, pieY0, guardia: 0, paso: 0, fase: 0 };
+  actores[i] = a; return a;
+}
+function flashActor(a, color) { const vistos = new Set(); for (const m of a.mallas) { const mm = m.material; if (vistos.has(mm) || !mm.emissive || mm === m.userData.factoryMat) continue; vistos.add(mm); mm.emissive.set(color); mm.emissiveIntensity = 1.2; gsap.to(mm, { emissiveIntensity: 0, duration: 0.9 }); } }
+function vestirActor(a, ci) {
+  const piel = pielDe(a.art, ci);
+  for (const m of a.mallas) {
+    const z = m.userData.zona; const spec = piel.z[z];
+    if (ZONAS[z]?.libre || !spec || spec[1] === 'factory') { m.material = m.userData.factoryMat; continue; }
+    const k = spec.join('|'); a.cache ??= new Map(); let mm = a.cache.get(k); if (!mm) { mm = mat(spec[0], spec[1]); a.cache.set(k, mm); } m.material = mm;
+  }
+}
+// suma de rotaciones por articulación: guardia (con peso) + ciclo de paso
+function poseActor(a, dt) {
+  const P = POSES[a.art.id], w = a.guardia, s = a.paso;
+  if (s > 0) a.fase += dt * 7.2;
+  const f = a.fase, sin = Math.sin(f), cos = Math.cos(f);
+  const paso = {
+    J_LINK_HIP_PITCH_L: [0, 0, 0.42 * sin], J_LINK_HIP_PITCH_R: [0, 0, -0.42 * sin],
+    J_LINK_KNEE_PITCH_L: [0, 0, -(0.12 + 0.62 * Math.max(0, -cos))], J_LINK_KNEE_PITCH_R: [0, 0, -(0.12 + 0.62 * Math.max(0, cos))],
+    J_LINK_ANKLE_PITCH_L: [0, 0, 0.1 + 0.22 * Math.max(0, -sin)], J_LINK_ANKLE_PITCH_R: [0, 0, 0.1 + 0.22 * Math.max(0, sin)],
+    J_LINK_SHOULDER_PITCH_L: [0, 0, -0.34 * sin], J_LINK_SHOULDER_PITCH_R: [0, 0, 0.34 * sin],
+    J_LINK_ELBOW_PITCH_L: [0, 0, 0.35], J_LINK_ELBOW_PITCH_R: [0, 0, 0.35],
+    J_LINK_WAIST_YAW: [0, 0.1 * sin, 0.06],
+  };
+  for (const [n, j] of Object.entries(a.joints)) {
+    const g = P[n], k = paso[n]; if (!g && !k) { if (j.userData.mod) { j.quaternion.copy(j.userData.q0); j.userData.mod = false; } continue; }
+    const x = (g ? g[0] * w : 0) + (k ? k[0] * s : 0), y = (g ? g[1] * w : 0) + (k ? k[1] * s : 0), z = (g ? g[2] * w : 0) + (k ? k[2] * s : 0);
+    j.quaternion.copy(j.userData.q0).multiply(_q.setFromEuler(_e.set(x, y, z, 'XYZ'))); j.userData.mod = true;
+  }
+  // los pies siempre sobre la lona: al flexionar las rodillas el cuerpo baja
+  a.root.updateMatrixWorld(true);
+  const pie = Math.min(a.joints.J_LINK_FOOT_L.getWorldPosition(_p).y, a.joints.J_LINK_FOOT_R.getWorldPosition(_p).y) - a.root.position.y;
+  a.g.position.y += a.pieY0 - pie;
+}
+
 // impresos proyectados sobre los paneles reales
 function decalsZona(robot, piel, modo, zona) {
   const cache = robot.userData.dcache ??= new Map(); const k = modo + '|' + zona;
@@ -514,7 +595,7 @@ async function construir() {
   for (const d of disenos) { if (!d) continue; const c = ARTISTAS.find(x => x.id === d.id)?.conceptos[d.ci]; if (c) { c.mats = d.mats; c.calcos = d.calcos; } }
   if (!src) throw new Error('No se pudo cargar el modelo oficial del T800 Max');
   ARTISTAS.forEach((art, i) => {
-    const r = robotDesdeGLB(art, src);
+    SRC = src; const r = robotDesdeGLB(art, src); crearActor(art, i);
     r.position.set(POS[i], 0, 0); r.rotation.y = CARA[i]; scene.add(r); robots.push(r);
     const st = new THREE.Group();
     const ring = new THREE.Mesh(new THREE.CircleGeometry(0.75, 64), new THREE.MeshBasicMaterial({ map: ringTex, color: new THREE.Color(art.acento).multiplyScalar(1.6), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
@@ -535,7 +616,7 @@ function camTo(pos, tgt, dur = 1.6, ease = 'power3.inOut') {
   gsap.to(camera.position, { x: pos.x, y: pos.y, z: pos.z, duration: dur, ease });
   gsap.to(look, { x: tgt.x, y: tgt.y, z: tgt.z, duration: dur, ease });
 }
-function camSelect() { const n = isNarrow(), z = 5.4 + Math.max(0, 1.7 - innerWidth / innerHeight) * 2.4; const zn = 6.4 + Math.max(0, 0.9 - innerWidth / innerHeight) * 7; camTo(n ? V(0, 0.95, zn) : V(-0.55, 1.15, z), n ? V(0, 0.62, 0) : V(-0.55, 0.86, 0), 2.2); }
+function camSelect() { const n = isNarrow(), z = 5.4 + Math.max(0, 1.7 - innerWidth / innerHeight) * 2.4; const zn = 6.4 + Math.max(0, 0.9 - innerWidth / innerHeight) * 3.2; camTo(n ? V(0, 0.95, zn) : V(-0.55, 1.15, z), n ? V(0, 0.62, 0) : V(-0.55, 0.86, 0), 2.2); }
 function camGarage() { const n = isNarrow(); camTo(V(0.4, n ? 0.95 : 1.1, n ? 6.2 : 4.5), V(n ? 0 : -0.45, n ? 0.45 : 0.92, 0), 1.9); }
 
 // ================= CAPÍTULOS =================
@@ -560,7 +641,7 @@ function setMode(mode) {
   robots.forEach(r => { if (r.userData.xray) setXray(r, false); });
   S.explode = 0; robots.forEach(r => setExplode(r, 0)); syncDock(); $('#xray-legend').classList.remove('show');
   if (mode === 'select') {
-    robots.forEach((r, i) => { r.visible = true; gsap.to(r.position, { x: POS[i], y: 0, duration: 1.4, ease: 'power3.inOut' }); gsap.to(r.rotation, { y: CARA[i], duration: 1.4 }); gsap.to(stands[i].g.position, { x: POS[i], duration: 1.4, ease: 'power3.inOut' }); });
+    robots.forEach((r, i) => { r.visible = true; gsap.to(r.position, { x: POS[i], y: 0, z: 0, duration: 1.4, ease: 'power3.inOut' }); gsap.to(r.rotation, { y: CARA[i], duration: 1.4 }); gsap.to(stands[i].g.position, { x: POS[i], z: 0, duration: 1.4, ease: 'power3.inOut' }); });
     camSelect(); setAcc('#a9bbff'); backdrop('#a9bbff', 0.22); highlight(S.idx); sfx.musica('musica'); goboHide();
     robots.forEach((r, i) => { if (r.userData.modo !== S.concept[i]) setTimeout(() => vestir(r, S.concept[i], true), 300 + i * 250); });
   }
@@ -792,7 +873,7 @@ function buildTags() {
 }
 function updateTags() {
   if (S.mode !== 'select') return;
-  robots.forEach((r, i) => { tmpV.set(r.position.x, -0.02, 0.35).project(camera); const x = (tmpV.x * 0.5 + 0.5) * innerWidth, y = Math.min((-tmpV.y * 0.5 + 0.5) * innerHeight, innerHeight - (tagH ||= tagEls[i].offsetHeight || 150) - 84); tagEls[i].style.transform = `translate(${x | 0}px, ${y | 0}px)`; });
+  robots.forEach((r, i) => { tmpV.set(r.position.x, -0.02, 0.35).project(camera); const x = (tmpV.x * 0.5 + 0.5) * innerWidth, y = Math.min((-tmpV.y * 0.5 + 0.5) * innerHeight, innerHeight - (tagH ||= tagEls[i].offsetHeight || 150) - 84); const mx = (tagEls[i].offsetWidth || 120) / 2 + 8; tagEls[i].style.transform = `translate(${Math.min(innerWidth - mx, Math.max(mx, x)) | 0}px, ${y | 0}px)`; });
 }
 
 // ================= CONTROLES =================
@@ -943,40 +1024,51 @@ function start() {
   gsap.to('#boot', { opacity: 0, duration: 0.8, ease: 'power2.inOut', onComplete: () => $('#boot').remove() });
   intro();
 }
-// INTRO: el estudio a oscuras; a cada robot le cae su luz, su logo y el escáner le pone la piel
+// INTRO: la arena a oscuras; cada robot sale de su esquina con su guardia, camina al centro y quedan cara a cara
+const SALIDA = [V(-2.25, 0, -2.1), V(2.25, 0, -2.1)];
+const ENCUENTRO = [V(-0.6, 0, 0.2), V(0.6, 0, 0.2)];
+const MIRA = [Math.PI / 2, -Math.PI / 2]; // de perfil, mirándose
 function intro() {
   S.mode = 'intro'; document.body.dataset.mode = 'intro';
-  robots.forEach((r, i) => { r.position.set(POS[i], 0, 0); r.rotation.y = CARA[i]; vestir(r, "fabrica"); stands[i].g.position.x = POS[i]; });
+  robots.forEach(r => { r.visible = false; });
+  actores.forEach((a, i) => { a.root.visible = true; a.root.position.copy(SALIDA[i]); a.root.rotation.y = Math.atan2(-SALIDA[i].x, -SALIDA[i].z); a.guardia = 0; a.paso = 0; vestirActor(a, 'fabrica'); stands[i].g.position.set(SALIDA[i].x, 0, SALIDA[i].z); });
   stands.forEach(s => { s.spot.intensity = 0; s.glow.material.opacity = 0; });
   const k0 = LUZ0?.k ?? key.intensity, r0 = LUZ0?.r ?? rim1.intensity, h0 = LUZ0?.h ?? scene.environmentIntensity; gsap.killTweensOf(camera.position);
   key.intensity = 0.05; rim1.intensity = 0.5; scene.environmentIntensity = 0.12; backdrop('#a9bbff', 0.04);
-  camera.position.set(0.5, 0.25, 8.5); look.set(0, 0.95, 0);
+  camera.position.set(0.4, 0.6, 8.5); look.set(0, 0.95, -1);
   gsap.set(['#top', '#bottom'], { opacity: 0 });
   gsap.fromTo('.io-bars i', { scaleY: 0 }, { scaleY: 1, duration: 1.2, ease: 'expo.out' });
   const tl = gsap.timeline({ onComplete: () => finIntro(k0, r0, h0) }); introTL = tl;
   tl.fromTo('#io-top', { opacity: 0, letterSpacing: '1.2em' }, { opacity: 1, letterSpacing: '.45em', duration: 2.2, ease: 'expo.out' }, 0.4)
-    .to(camera.position, { x: 0, z: 6, y: 0.55, duration: 2.6, ease: 'power2.inOut' }, 0)
+    .to(camera.position, { x: 0, z: 6.4, y: 1.1, duration: 2.6, ease: 'power2.inOut' }, 0)
     .to('#io-top', { opacity: 0, duration: 0.5 }, 2.3);
-  const T = 2.4, step = 3.0;
+  const T = 2.4, step = 3.4;
   ARTISTAS.forEach((art, i) => {
-    const t0 = T + i * step;
+    const t0 = T + i * step, a = actores[i], r = a.root, sg = i ? -1 : 1;
     tl.add(() => golpe(i), t0)
-      .to(camera.position, { x: POS[i] + 0.55, y: 1.05, z: 3.3, duration: 1.1, ease: 'expo.out' }, t0)
-      .to(look, { x: POS[i] - 0.15, y: 0.95, z: 0, duration: 1.1, ease: 'expo.out' }, t0)
-      .to(camera.position, { x: POS[i] - 0.35, duration: step - 1.1, ease: 'none' }, t0 + 1.1);
+      // la cámara lo recibe en su esquina y lo sigue hasta el centro
+      .to(camera.position, { x: SALIDA[i].x * 0.45 + sg * 0.4, y: 1.2, z: 2.2, duration: 1.0, ease: 'expo.out' }, t0)
+      .to(look, { x: SALIDA[i].x, y: 1.0, z: SALIDA[i].z, duration: 1.0, ease: 'expo.out' }, t0)
+      .to(r.position, { x: ENCUENTRO[i].x, z: ENCUENTRO[i].z, duration: 2.1, ease: 'power1.inOut', onStart: () => { gsap.to(a, { paso: 1, duration: 0.35 }); }, onComplete: () => { gsap.to(a, { paso: 0, duration: 0.3 }); gsap.to(a, { guardia: 1, duration: 0.8, ease: 'power2.out' }); } }, t0 + 0.6)
+      .to(stands[i].g.position, { x: ENCUENTRO[i].x, z: ENCUENTRO[i].z, duration: 2.1, ease: 'power1.inOut' }, t0 + 0.6)
+      .to(r.rotation, { y: MIRA[i], duration: 0.7, ease: 'power2.out' }, t0 + 2.0)
+      .to(look, { x: ENCUENTRO[i].x, y: 1.05, z: ENCUENTRO[i].z, duration: 2.1, ease: 'power1.inOut' }, t0 + 0.6)
+      .to(camera.position, { x: ENCUENTRO[i].x + sg * 0.9, z: 2.8, duration: 2.1, ease: 'power1.inOut' }, t0 + 0.6);
   });
   const tEnd = T + N * step;
+  // cara a cara: plano cerrado de perfil entre los dos
   tl.add(() => {
     sfx.boom(); setAcc('#a9bbff'); backdrop('#a9bbff', 0.22);
-    stands.forEach(s => gsap.to(s.spot, { intensity: 4, duration: 0.8 }));
+    stands.forEach(s => gsap.to(s.spot, { intensity: 6, duration: 0.6 }));
     gsap.to(key, { intensity: k0, duration: 1.6 }); gsap.to(rim1, { intensity: r0, duration: 1.6 }); gsap.to(scene, { environmentIntensity: h0, duration: 1.6 });
-    $('#io-logo').innerHTML = ''; palabras($('#io-name'), 'Westcol vs Blessd.'); $('#io-sub').textContent = 'STREAM FIGHTERS 5 · 14 NOV · COLISEO MEDPLUS';
+    $('#io-logo').innerHTML = ''; palabras($('#io-name'), 'Cara a cara.'); $('#io-sub').textContent = 'WESTCOL VS BLESSD · STREAM FIGHTERS 5 · 14 NOV';
     gsap.fromTo('.io-c', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, ease: 'expo.out' });
   }, tEnd)
-    .to(camera.position, { x: -0.55, y: 1.15, z: 5.4, duration: 2.6, ease: 'power3.inOut' }, tEnd)
-    .to(look, { x: -0.55, y: 0.86, z: 0, duration: 2.6, ease: 'power3.inOut' }, tEnd)
-    .to('.io-c', { opacity: 0, duration: 0.6 }, tEnd + 2.1)
-    .to({}, { duration: 0.1 }, tEnd + 2.7);
+    .to(camera.position, { x: 0.15, y: 1.15, z: 3.1, duration: 1.4, ease: 'expo.out' }, tEnd)
+    .to(look, { x: 0, y: 0.95, z: 0.2, duration: 1.4, ease: 'expo.out' }, tEnd)
+    .to(camera.position, { x: -0.15, z: 3.4, duration: 2.2, ease: 'none' }, tEnd + 1.4)
+    .to('.io-c', { opacity: 0, duration: 0.6 }, tEnd + 3.0)
+    .to({}, { duration: 0.1 }, tEnd + 3.6);
   $('#io-skip').onclick = () => tl.progress(1);
 }
 function golpe(i) {
@@ -989,10 +1081,11 @@ function golpe(i) {
   $('#io-sub').textContent = `${ESQUINA[i].nombre} · ${MODELO.nombre}`;
   gsap.fromTo('.io-c', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.7, ease: 'expo.out' });
   gsap.to('.io-c', { opacity: 0, y: -10, duration: 0.4, delay: 2.4 });
-  introT.push(setTimeout(() => { if (S.mode === 'intro') vestir(robots[i], S.concept[i], true); }, 380));
+  introT.push(setTimeout(() => { if (S.mode === 'intro') { vestirActor(actores[i], S.concept[i]); flashActor(actores[i], col); } }, 380));
 }
 function finIntro(k0, r0, h0) {
   introT.forEach(clearTimeout); introT = [];
+  actores.forEach((a, i) => { const r = robots[i]; r.position.copy(a.root.position); r.rotation.y = a.root.rotation.y; r.visible = true; a.root.visible = false; vestir(r, S.concept[i]); });
   key.intensity = k0; rim1.intensity = r0; scene.environmentIntensity = h0;
   gsap.to('.io-bars i', { scaleY: 0, duration: 1, ease: 'expo.inOut' }); gsap.to('.io-c', { opacity: 0, duration: 0.3 });
   goCh(0, true);
@@ -1038,9 +1131,12 @@ function loop(now) {
       }
       u._e = e;
     }
-    u.body.position.y = Math.sin(t * 1.4 + i) * 0.003 + e * 0.32;
+    u.body.position.y = Math.sin(t * 1.4 + i) * 0.003 + e * 0.32 + (u.paso ? Math.abs(Math.sin(t * 7.5 + i)) * 0.035 : 0);
+    if (u.paso) u.body.rotation.z = Math.sin(t * 7.5 + i) * 0.035; else if (u.body.rotation.z) u.body.rotation.z *= 0.85;
     u.body.rotation.y = THREE.MathUtils.lerp(u.body.rotation.y, S.mode === 'select' ? S.mx * 0.6 : 0, 0.05);
   });
+  if (S.mode === 'intro') { const dt = Math.min(0.05, t - (S.tPrev ?? t)); for (const a of actores) if (a?.root.visible) poseActor(a, dt); }
+  S.tPrev = t;
   particles.rotation.y = t * 0.008; estudio.update(t); estudio.ocultar(camera.position);
   if (S.mode === 'garage') {
     if (gsap.isTweening(look) || gsap.isTweening(camera.position)) { controls.target.copy(look); camera.lookAt(look); }

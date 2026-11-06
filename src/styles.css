@@ -5,7 +5,7 @@
   /* el acento como TEXTO: mezclado con crema para pasar AA sobre #05060d (el azul puro no llega) */
   --acc-t:color-mix(in srgb,var(--acc) 60%,var(--ink));
   --acc-d:color-mix(in srgb,var(--acc) 75%,var(--ink));
-  --mono:'Inter Variable',Inter,system-ui,sans-serif; --serif:'Bebas Neue',Oswald,Impact,'Arial Narrow',sans-serif; --body:'Inter Variable',Inter,system-ui,sans-serif;
+  --mono:'Inter Variable',Inter,system-ui,sans-serif; --serif:'Chakra Petch','Bebas Neue',Impact,sans-serif; --body:'Inter Variable',Inter,system-ui,sans-serif;
   --sf-blue:#5b7cff; --sf-violet:#9a6bff; --sf-red:#ff3d50; --sf-ink:#a9bbff;
   --ease:cubic-bezier(.16,1,.3,1);
   --t-in:.24s; --t-out:.16s;
@@ -504,8 +504,8 @@ body.con-ficha #g-next{opacity:0;pointer-events:none}
 
 /* ===== identidad Stream Fighters 5 ===== */
 /* Bebas Neue no tiene cursiva: los titulares van rectos, en mayúsculas, y el énfasis va por color */
-h1,h2,h3,.g-concept,.io-name,#wp-name,.cz-h1{font-family:var(--serif)!important;font-style:normal!important;font-weight:400!important;letter-spacing:.01em;text-transform:uppercase;line-height:.92}
-h1 em,h2 em,h3 em,.cz-h1 em{font-style:normal!important;background:linear-gradient(90deg,var(--sf-blue),var(--sf-violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+h1,h2,h3,.g-concept,.io-name,#wp-name,.cz-h1{font-family:var(--serif)!important;font-style:italic!important;font-weight:700!important;letter-spacing:-.01em;text-transform:uppercase;line-height:.95}
+h1 em,h2 em,h3 em,.cz-h1 em{font-style:italic!important;background:linear-gradient(90deg,var(--sf-blue),var(--sf-violet));-webkit-background-clip:text;background-clip:text;color:transparent}
 .kick,.brand span,.hintbar,#chapters a,.tag .cn,.tag .ow,.tab b,.pill,.seg button{font-weight:600}
 body{background:radial-gradient(70% 55% at 50% 100%,rgba(91,124,255,.22),transparent 70%),#05060d}
 .vs-r{color:var(--sf-red)}.vs-b{color:var(--sf-blue)}
@@ -524,3 +524,22 @@ body{background:radial-gradient(70% 55% at 50% 100%,rgba(91,124,255,.22),transpa
 .sel-head h2 span,.sel-head h2 em{display:inline!important}
 #select::before{content:'';position:fixed;inset:0 auto 0 0;width:min(760px,60vw);background:linear-gradient(90deg,rgba(5,6,13,.78),rgba(5,6,13,.4) 55%,transparent);pointer-events:none;z-index:-1}
 @media (max-width:820px){#select::before{width:100%;inset:0 0 auto 0;height:42vh;background:linear-gradient(180deg,rgba(5,6,13,.8),transparent)}}
+/* sin cursivas ni negritas inventadas por el navegador (Bebas Neue solo tiene un estilo) */
+html{font-synthesis:none}
+#yt-mini b{font-style:normal}
+@media (max-width:820px){
+  /* el reproductor queda como una franja mínima: la canción sigue sonando */
+  #yt-mini{left:12px;right:auto;top:auto;bottom:calc(150px + var(--safe-b));width:auto;max-width:62vw;padding:8px 12px;display:flex;align-items:center;gap:10px}
+  #yt-mini #yt-player,#yt-mini iframe{position:absolute!important;width:1px!important;height:1px!important;opacity:0;pointer-events:none}
+  #yt-mini .yt-k{margin:0;white-space:nowrap}#yt-mini .yt-info{margin:0;min-width:0}#yt-mini b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#yt-mini span{display:none}
+  .tag .ow{display:block!important;font-size:10px}
+}
+
+/* sello oficial SF5 */
+.brand{display:flex;align-items:center;gap:12px}.brand .sf5{height:30px;width:auto}
+.lockup .sf5{height:44px;width:auto;display:block;margin:0 auto 10px}
+#press,.boletas,.cuenta b{font-family:var(--serif)!important;font-style:italic!important;font-weight:700!important}
+#boot .lockup{display:flex;flex-direction:column;align-items:center;gap:6px}
+#boot .lockup .lk{position:static!important;font-family:var(--serif);font-style:italic;font-weight:700;letter-spacing:.12em;color:#a9bbff}
+.sel-head h2{white-space:nowrap!important;font-size:clamp(40px,4.6vw,80px)!important}
+@media (max-width:820px){.sel-head h2{font-size:clamp(30px,9.5vw,52px)!important}}

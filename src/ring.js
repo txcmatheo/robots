@@ -8,7 +8,7 @@ export const SF = {
   bg: '#05060d', surface: '#0b0d1a', surface2: '#111427', surface3: '#181c35',
   ink: '#f4f5fb', brand: '#5b7cff', brand2: '#9a6bff', cyan: '#8ef1ff', red: '#ff3d50', redStrong: '#d42638', green: '#53fc18',
 };
-const PANT = [[-5.2, 'WESTCOL', SF.red], [0, 'VS', SF.brand2], [5.2, 'BLESSD', SF.brand]];
+const PANT = [[-6.4, 'WESTCOL', SF.red], [0, 'VS', SF.brand2], [6.4, 'BLESSD', SF.brand]];
 export const RING = { mitad: 3.0, alto: 1.05 }; // medio lado entre cuerdas y altura de la plataforma
 
 function canvasTex(w, h, draw, srgb = true) {
@@ -46,8 +46,8 @@ function texLona() {
     c.strokeStyle = g; c.lineWidth = W * 0.018; c.beginPath(); c.arc(C, C, W * 0.27, 0, Math.PI * 2); c.stroke();
     c.lineWidth = W * 0.004; c.beginPath(); c.arc(C, C, W * 0.3, 0, Math.PI * 2); c.stroke();
     c.textAlign = 'center'; c.textBaseline = 'middle';
-    c.font = `400 ${W * 0.085}px "Bebas Neue"`; c.fillStyle = 'rgba(244,245,251,.9)'; c.fillText('STREAM FIGHTERS', C, C - W * 0.035);
-    c.font = `400 ${W * 0.16}px "Bebas Neue"`; c.fillStyle = g; c.fillText('5', C, C + W * 0.09);
+    c.font = `italic 700 ${W * 0.07}px "Chakra Petch"`; c.fillStyle = 'rgba(244,245,251,.9)'; c.fillText('STREAM FIGHTERS', C, C - W * 0.035);
+    c.font = `italic 700 ${W * 0.16}px "Chakra Petch"`; c.fillStyle = g; c.fillText('5', C, C + W * 0.09);
     // franjas laterales con los colores de cada esquina
     c.fillStyle = 'rgba(255,61,80,.35)'; c.fillRect(m * 1.6, W * 0.42, W * 0.012, W * 0.16);
     c.fillStyle = 'rgba(91,124,255,.45)'; c.fillRect(W - m * 1.6 - W * 0.012, W * 0.42, W * 0.012, W * 0.16);
@@ -58,8 +58,8 @@ function texPantalla(texto, col) {
   return canvasTex(1024, 512, (c, W, H) => {
     const g = c.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#0b0d1a'); g.addColorStop(1, '#111427'); c.fillStyle = g; c.fillRect(0, 0, W, H);
     c.fillStyle = col; c.globalAlpha = 0.18; for (let y = 0; y < H; y += 6) c.fillRect(0, y, W, 2); c.globalAlpha = 1; // líneas de LED
-    c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = `400 ${H * 0.34}px "Bebas Neue"`; c.fillStyle = SF.ink; c.fillText(texto, W / 2, H * 0.46);
-    c.font = `400 ${H * 0.11}px "Bebas Neue"`; c.fillStyle = col; c.fillText('STREAM FIGHTERS 5 · 14 NOV · BOGOTÁ', W / 2, H * 0.8);
+    c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = `italic 700 ${H * 0.3}px "Chakra Petch"`; c.fillStyle = SF.ink; c.fillText(texto, W / 2, H * 0.46);
+    c.font = `italic 700 ${H * 0.09}px "Chakra Petch"`; c.fillStyle = col; c.fillText('STREAM FIGHTERS 5 · 14 NOV · BOGOTÁ', W / 2, H * 0.8);
   });
 }
 
@@ -75,8 +75,8 @@ export function crearRing(scene, renderer) {
   // plataforma y lona
   const lona = new THREE.Mesh(new THREE.PlaneGeometry(L * 2, L * 2), new THREE.MeshStandardMaterial({ map: texLona(), roughness: 0.85, metalness: 0, envMapIntensity: 0.4 }));
   // los textos del ring usan Bebas Neue: se redibujan en cuanto la fuente está lista
-  let intentos = 0; const redibujar = () => { lona.material.map.dispose(); lona.material.map = texLona(); lona.material.needsUpdate = true; pantallas.forEach((p, i) => { p.material.map.dispose(); p.material.map = texPantalla(...PANT[i].slice(1)); p.material.needsUpdate = true; }); };
-  const esperaFuente = () => { if (document.fonts.check('400 100px "Bebas Neue"')) return redibujar(); if (++intentos > 40) return; document.fonts.load('400 100px "Bebas Neue"').finally(() => setTimeout(esperaFuente, 150)); };
+  let intentos = 0; const redibujar = () => { lona.material.map.dispose(); lona.material.map = texLona(); lona.material.needsUpdate = true; pantallas.forEach((p, i) => { if (p.userData.cartel) return; p.material.map.dispose(); p.material.map = texPantalla(...PANT[i].slice(1)); p.material.needsUpdate = true; }); };
+  const esperaFuente = () => { if (document.fonts.check('italic 700 100px "Chakra Petch"')) return redibujar(); if (++intentos > 40) return; document.fonts.load('italic 700 100px "Chakra Petch"').finally(() => setTimeout(esperaFuente, 150)); };
   setTimeout(esperaFuente, 0);
   lona.rotation.x = -Math.PI / 2; lona.receiveShadow = true; grupo.add(lona);
   const faldon = new THREE.Mesh(new THREE.BoxGeometry(L * 2, A, L * 2), [0, 1, 2, 3, 4, 5].map(i => new THREE.MeshStandardMaterial({ color: i === 2 || i === 3 ? '#000' : SF.surface, roughness: 0.6, metalness: 0.2 })));
@@ -142,10 +142,12 @@ export function crearRing(scene, renderer) {
   // pantallas LED al fondo
   const pantallas = [];
   for (const [x, txt, col] of PANT) {
-    const p = new THREE.Mesh(new THREE.PlaneGeometry(x === 0 ? 2.6 : 4.6, x === 0 ? 1.6 : 2.3), new THREE.MeshBasicMaterial({ map: texPantalla(txt, col), toneMapped: false, fog: false }));
+    const p = new THREE.Mesh(new THREE.PlaneGeometry(x === 0 ? 6.0 : 4.0, x === 0 ? 3.15 : 2.0), new THREE.MeshBasicMaterial({ map: texPantalla(txt, col), toneMapped: false, fog: false }));
     p.position.set(x, 4.3, -12); p.material.color.setScalar(0.55); grupo.add(p); pantallas.push(p);
   }
 
+  // la pantalla central muestra el cartel oficial de Stream Fighters 5
+  new THREE.TextureLoader().load(import.meta.env.BASE_URL + 'sf/cartel.webp', t => { t.colorSpace = THREE.SRGBColorSpace; const p = pantallas[1]; p.material.map?.dispose(); p.material.map = t; p.material.color.setScalar(0.75); p.material.needsUpdate = true; p.userData.cartel = true; });
   // público en penumbra: siluetas tenues y luces de celulares que titilan
   const NP = MOVIL ? 900 : 2000; const pos = new Float32Array(NP * 3), fase = new Float32Array(NP);
   for (let i = 0; i < NP; i++) {

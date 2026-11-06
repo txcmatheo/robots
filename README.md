@@ -4,6 +4,14 @@ Presentación 3D de la pelea de robots de **Stream Fighters 5** (14 de noviembre
 
 Experiencia 3D sobre dos robots **EngineAI T800 Max** forrados en película PPF. Está construida con Vite, three.js y GSAP.
 
+## Versiones publicadas
+
+| Dirección | Versión | Etiqueta git |
+| --- | --- | --- |
+| https://txcmatheo.github.io/robots/ | La más reciente (ring) | rama `main` |
+| https://txcmatheo.github.io/robots/v2/ | Ring de Stream Fighters 5 | `v2-ring` |
+| https://txcmatheo.github.io/robots/v1/ | Estudio fotográfico (versión anterior) | `v1-estudio` |
+
 ## Uso
 
 ```bash

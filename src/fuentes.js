@@ -15,3 +15,6 @@ import '@fontsource/pirata-one/latin-400.css';
 // identidad de Stream Fighters
 import '@fontsource/bebas-neue/latin-400.css';
 import '@fontsource-variable/inter/index.css';
+// tipografía oficial de streamfighters.live
+import '@fontsource/chakra-petch/latin-700.css';
+import '@fontsource/chakra-petch/latin-700-italic.css';
