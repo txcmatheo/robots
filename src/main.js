@@ -542,7 +542,6 @@ function setMode(mode) {
 function highlight(i) {
   stands.forEach((s, k) => { gsap.to(s.glow.material, { opacity: k === i ? 0.4 : 0.08, duration: 0.6 }); gsap.to(s.spot, { intensity: k === i ? 6 : 2, duration: 0.6 }); });
   tagEls.forEach((t, k) => t.classList.toggle('on', k === i));
-  if (S.mode === 'select' || S.mode === 'intro') { const ar = ARTISTAS[i]; tarjeta($('#sel-card'), ar, ar.conceptos[S.concept[i]]); }
   if (isNarrow() && S.mode === 'select') camSelect();
 }
 function setExplode(r, v) { gsap.to(r.userData, { explode: v, duration: 1.3, ease: 'expo.inOut' }); }
@@ -575,7 +574,6 @@ function fillGarage() {
   $('#g-fins').innerHTML = fins.map(f => `<li><i class="fin fin-${f}"></i>${FN[f] || f}</li>`).join('');
   gsap.fromTo(['#g-idea', '#g-concepts', '#g-fins'], { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.8, stagger: 0.08, delay: 0.45, ease: 'expo.out' });
   $$('#g-mode button').forEach(b => b.classList.toggle('on', b.dataset.v === 'ppf'));
-  tarjeta($('#g-render'), a, c);
   const nx = CH[S.ch + 1]; $('#g-next').innerHTML = `<small>SIGUIENTE</small><b>${nx ? (nx.k === 'garage' ? ARTISTAS[nx.i].nombre : nx.n) : ''} →</b>`; $('#g-next').style.display = nx ? '' : 'none';
 }
 function pickConcept(j) {
@@ -849,32 +847,6 @@ function transition(mid, color = '#e8c27a', label = null) {
   tl.add(() => document.body.classList.remove('titulando'), label ? 1.75 : 0.5);
   tl.set(w, { display: 'none' }).set(['#wp-n', '#wp-line'], { opacity: 1 }).set(canvas, { filter: 'none' });
 }
-
-// tarjeta con la imagen fotorreal, con inclinación al mouse
-function tarjeta(el, a, c) {
-  const file = c && a.renders?.[slug(c.nombre)];
-  clearInterval(el._t);
-  if (!file) { el.classList.remove('show'); return; }
-  const img = el.querySelector('img');
-  if (img.dataset.src !== file) { gsap.fromTo(img, { opacity: 0, scale: 1.06 }, { opacity: 1, scale: 1, duration: 0.9, ease: 'expo.out' }); img.src = file; img.dataset.src = file; img.alt = `${a.nombre} · ${titulo(c.nombre)}`; }
-  const abrir = () => { const ims = imagenesDe(a); abrirLB(ims, Math.max(0, ims.findIndex(x => x.src === img.dataset.src))); };
-  const cap = el.querySelector('figcaption'); if (cap) { cap.innerHTML = `<b>${esc(titulo(c.nombre))}</b><span>${a.nombre}</span><button class="lb-btn">⤢ Abrir imagen completa</button>`; cap.querySelector('.lb-btn').onclick = (e) => { e.stopPropagation(); abrir(); }; }
-  el.querySelector('.tilt').onclick = abrir;
-  el.style.setProperty('--c', c.acento || a.acento);
-  el.classList.add('show');
-  const back = a.renders?.[slug(c.nombre) + '_espalda'];
-  if (back && !REDUCIDO) { new Image().src = back; let f = true; el._t = setInterval(() => { if (document.hidden) return; f = !f; const s = f ? file : back; gsap.to(img, { opacity: 0, duration: 0.4, onComplete: () => { img.src = s; img.dataset.src = s; gsap.to(img, { opacity: 1, duration: 0.6 }); } }); }, 4200); }
-}
-const tilts = $$('.tilt'); let tiltEv = null;
-if (matchMedia('(pointer:fine)').matches && !REDUCIDO) addEventListener('pointermove', e => {
-  if (tiltEv) { tiltEv = e; return; } tiltEv = e;
-  requestAnimationFrame(() => {
-    const ev = tiltEv; tiltEv = null;
-    const rx = (ev.clientY / innerHeight - 0.5) * -10, ry = (ev.clientX / innerWidth - 0.5) * 14;
-    for (const t of tilts) { if (!t.offsetParent) continue; t.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg)`; t.style.setProperty('--gx', (ev.clientX / innerWidth * 100) + '%'); }
-  });
-}, { passive: true });
-
 // ================= LA PIEL =================
 let pielIO = null;
 function openPiel() {
@@ -1046,7 +1018,7 @@ let rzT = 0; addEventListener('resize', () => { clearTimeout(rzT); rzT = setTime
 if (matchMedia('(pointer:fine)').matches && !REDUCIDO) {
   const cur = document.createElement('div'); cur.id = 'cursor'; cur.innerHTML = '<i></i>'; cur.setAttribute('aria-hidden', 'true'); document.body.appendChild(cur);
   const cp = { x: innerWidth / 2, y: innerHeight / 2 }, tp = { ...cp };
-  addEventListener('pointermove', e => { tp.x = e.clientX; tp.y = e.clientY; const it = e.target.closest('button,a,.tag,.tab,input,.tilt'); cur.classList.toggle('big', !!it || canvas.style.cursor === 'pointer'); }, { passive: true });
+  addEventListener('pointermove', e => { tp.x = e.clientX; tp.y = e.clientY; const it = e.target.closest('button,a,.tag,.tab,input'); cur.classList.toggle('big', !!it || canvas.style.cursor === 'pointer'); }, { passive: true });
   gsap.ticker.add(() => { const dx = tp.x - cp.x, dy = tp.y - cp.y; if (Math.abs(dx) + Math.abs(dy) < 0.1) return; cp.x += dx * 0.2; cp.y += dy * 0.2; cur.style.transform = `translate(${cp.x}px, ${cp.y}px)`; });
   document.documentElement.classList.add('cur');
 }
