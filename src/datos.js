@@ -107,17 +107,18 @@ function vapor(c, W, H, color = 'rgba(255,255,255,.85)', n = 5, seed = 3) { // n
 
 // Colección de Westcol. Reemplaza a la del JSON: fuera Majin W; el guiño a Buu queda solo en KID W.
 
-// Logotipo de Kick dibujado en bloques (aproximación para la maqueta; en producción se imprime el archivo oficial con permiso de Kick)
-const KICK_PX = {
-  K: ['X..X', 'X.X.', 'XX..', 'X.X.', 'X..X'],
-  I: ['X', 'X', 'X', 'X', 'X'],
-  C: ['XXX', 'X..', 'X..', 'X..', 'XXX'],
-};
+// Logotipo de Kick: trazos tomados del archivo oficial (lienzo 1982×666). En producción se imprime el vector oficial con permiso de Kick.
+const KICK_K = [[5,4],[215,4],[215,149],[286,149],[286,76],[356,76],[356,4],[568,4],[568,223],[497,223],[497,296],[427,296],[427,369],[497,369],[497,442],[568,442],[568,662],[356,662],[356,589],[286,589],[286,516],[215,516],[215,662],[5,662]];
+const KICK_FORMAS = [
+  KICK_K,
+  [[638,4],[850,4],[850,662],[638,662]],
+  [[991,3],[1343,3],[1343,222],[1131,222],[1131,441],[1343,441],[1343,661],[991,661],[991,589],[920,589],[920,76],[991,76]],
+  KICK_K.map(([x, y]) => [x + 1409, y]),
+];
 function kickLogo(c, W, H, { color = KICK, x = 0.5, y = 0.5, w = 0.8 } = {}) {
-  const letras = ['K', 'I', 'C', 'K'].map(l => KICK_PX[l]); const cols = letras.reduce((a, l) => a + l[0].length, 0) + letras.length - 1;
-  const cell = Math.min((W * w) / cols, H * 0.9 / 5); const tw = cols * cell; let cx = x * W - tw / 2; const cy = y * H - cell * 2.5;
+  const s = Math.min((W * w) / 1972, (H * 0.9) / 659); const ox = x * W - (1972 * s) / 2 - 5 * s, oy = y * H - (659 * s) / 2 - 3 * s;
   c.save(); c.fillStyle = color;
-  for (const l of letras) { l.forEach((fila, r) => [...fila].forEach((p, k) => { if (p === 'X') c.fillRect(cx + k * cell, cy + r * cell, cell + 0.5, cell + 0.5); })); cx += (l[0].length + 1) * cell; }
+  for (const f of KICK_FORMAS) { c.beginPath(); f.forEach(([px, py], i) => (i ? c.lineTo : c.moveTo).call(c, ox + px * s, oy + py * s)); c.closePath(); c.fill(); }
   c.restore();
 }
 
@@ -192,20 +193,23 @@ export const WESTCOL_DISENOS = [
     glow: { pecho: true },
   },
   {
-    nombre: 'KID W', acento: '#E040A0', visor: '#E040A0',
-    idea: 'Inspirado en el pequeño Buu: piel rosa, pantalón blanco y amplio, cinturón negro con hebilla de oro, botas negras y nubes de vapor impresas.',
-    paleta: ['#F49AC1', BLANCO, NEGRO, '#F2C230', '#E040A0'],
+    nombre: 'KID W', acento: '#F49AC1', visor: '#FF2A2A',
+    idea: 'Inspirado en el pequeño Buu: piel rosa con los agujeros de vapor en pecho y espalda, muñequeras negras con filete dorado, pantalón blanco amplio, cinturón negro con hebilla dorada y la W, y botas café dorado con caña negra.',
+    paleta: ['#F49AC1', '#0B0B0D', '#E8B53A', '#F2F2F0', '#A8661C'],
     z: {
-      casco: ['#F49AC1', 'gloss'], coronilla: ['#F49AC1', 'pearl'], pecho: ['#F49AC1', 'gloss'], pecho_inf: ['#F49AC1', 'gloss'],
-      mochila: ['#F49AC1', 'gloss'], hombro: ['#F49AC1', 'pearl'], brazo: ['#F49AC1', 'gloss'], antebrazo: ['#F49AC1', 'gloss'],
-      cadera: [NEGRO, 'satin'], muslo: [BLANCO, 'satin'], rodilla: [BLANCO, 'satin'], espinillera: [BLANCO, 'satin'], bota: [NEGRO, 'gloss'],
+      casco: ['#F49AC1', 'gloss'], coronilla: ['#F49AC1', 'gloss'], pecho: ['#F49AC1', 'gloss'], pecho_inf: ['#F49AC1', 'gloss'],
+      mochila: ['#F49AC1', 'gloss'], hombro: ['#F49AC1', 'pearl'], brazo: ['#F49AC1', 'gloss'], antebrazo: ['#1A1A1C', 'satin'],
+      cadera: ['#0B0B0D', 'satin'], muslo: ['#F2F2F0', 'satin'], rodilla: ['#F2F2F0', 'satin'], espinillera: ['#F2F2F0', 'satin'], bota: ['#A8661C', 'gloss'],
     },
     p: {
-      cadera: (c, W, H) => { c.fillStyle = '#F2C230'; c.fillRect(W * 0.36, H * 0.14, W * 0.28, H * 0.72); wMono(c, W, H, { color: NEGRO, y: 0.5, s: 0.5 }); },
-      mochila: (c, W, H) => vapor(c, W, H, 'rgba(255,255,255,.9)', 6, 7),
-      brazo: (c, W, H) => vapor(c, W, H, 'rgba(255,255,255,.9)', 2, 11),
-      muslo: (c, W, H) => { c.save(); c.strokeStyle = 'rgba(11,11,13,.18)'; c.lineWidth = W * 0.02; for (let k = 0.2; k < 1; k += 0.2) { c.beginPath(); c.moveTo(W * k, 0); c.quadraticCurveTo(W * (k + 0.06), H * 0.5, W * k, H); c.stroke(); } c.restore(); },
-      bota: (c, W, H) => { c.fillStyle = '#F2C230'; c.fillRect(0, H * 0.08, W, H * 0.14); },
+      // agujeros de vapor: dos arcos de puntos bajo los hombros
+      pecho: (c, W, H) => { c.save(); c.fillStyle = '#3A1020'; for (const sx of [-1, 1]) for (let k = 0; k < 4; k++) { const x = W * (0.5 + sx * (0.16 + k * 0.07)), y = H * (0.14 + k * k * 0.012); c.beginPath(); c.ellipse(x, y, W * 0.018, H * 0.014, 0, 0, Math.PI * 2); c.fill(); } c.restore(); },
+      mochila: (c, W, H) => { c.save(); c.fillStyle = '#3A1020'; for (const sx of [-1, 1]) for (let k = 0; k < 5; k++) { c.beginPath(); c.arc(W * (0.5 + sx * 0.14), H * (0.2 + k * 0.13), Math.min(W, H) * 0.028, 0, Math.PI * 2); c.fill(); } c.restore(); },
+      antebrazo: (c, W, H) => { c.fillStyle = '#E8B53A'; c.fillRect(0, H * 0.02, W, H * 0.06); c.fillRect(0, H * 0.92, W, H * 0.06); },
+      cadera: (c, W, H) => { const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#F7D25A'); g.addColorStop(1, '#C98E1E'); c.fillStyle = g; c.beginPath(); c.moveTo(W * 0.32, H * 0.08); c.lineTo(W * 0.68, H * 0.08); c.lineTo(W * 0.6, H * 0.92); c.lineTo(W * 0.4, H * 0.92); c.closePath(); c.fill(); wMono(c, W, H, { color: '#0B0B0D', y: 0.42, s: 0.42 }); },
+      muslo: (c, W, H) => { c.save(); c.strokeStyle = 'rgba(120,128,140,.35)'; c.lineWidth = W * 0.025; for (let k = 0.18; k < 1; k += 0.16) { c.beginPath(); c.moveTo(W * k, 0); c.bezierCurveTo(W * (k + 0.08), H * 0.3, W * (k - 0.06), H * 0.65, W * (k + 0.03), H); c.stroke(); } c.restore(); },
+      espinillera: (c, W, H) => { c.save(); c.strokeStyle = 'rgba(120,128,140,.35)'; c.lineWidth = W * 0.03; for (let k = 0.25; k < 1; k += 0.25) { c.beginPath(); c.moveTo(W * k, 0); c.quadraticCurveTo(W * (k + 0.07), H * 0.5, W * k, H * 0.85); c.stroke(); } c.restore(); },
+      bota: (c, W, H) => { c.fillStyle = '#0B0B0D'; c.fillRect(0, 0, W, H * 0.34); c.fillStyle = '#E8B53A'; c.fillRect(0, H * 0.34, W, H * 0.08); },
     },
     glow: {},
   },
@@ -243,23 +247,6 @@ export const WESTCOL_DISENOS = [
       antebrazo: (c, W, H) => { c.fillStyle = '#FFC400'; c.fillRect(0, H * 0.82, W, H * 0.06); },
       espinillera: (c, W, H) => vertical(c, W, H, 'WESTCOL', { size: W * 0.34, color: '#F2F2F0', font: 'JetBrains Mono', weight: 800 }),
       bota: (c, W, H) => { c.fillStyle = '#F2F2F0'; c.fillRect(0, H * 0.18, W, H * 0.07); c.fillRect(0, H * 0.75, W, H * 0.07); },
-    },
-    glow: {},
-  },
-  {
-    nombre: 'WEST SANTOS', acento: AMARILLO, visor: AMARILLO,
-    idea: 'El robot con la camiseta de su club en la Kings League: blanco, azul marino y amarillo de los uniformes de West Santos, número 1 del presidente en la espalda.',
-    paleta: [BLANCO, NAVY, AMARILLO, NEGRO],
-    z: {
-      casco: [NAVY, 'gloss'], coronilla: [AMARILLO, 'gloss'], pecho: [BLANCO, 'gloss'], pecho_inf: [NAVY, 'satin'],
-      mochila: [BLANCO, 'gloss'], hombro: [AMARILLO, 'gloss'], brazo: [NAVY, 'satin'], antebrazo: [BLANCO, 'gloss'],
-      cadera: [NAVY, 'satin'], muslo: [NAVY, 'satin'], rodilla: [AMARILLO, 'gloss'], espinillera: [BLANCO, 'gloss'], bota: [NAVY, 'gloss'],
-    },
-    p: {
-      pecho: (c, W, H) => { c.fillStyle = NAVY; c.fillRect(0, H * 0.06, W, H * 0.1); c.fillStyle = AMARILLO; c.fillRect(0, H * 0.16, W, H * 0.04); texto(c, W, H, 'WEST SANTOS', { size: H * 0.15, color: NAVY, y: 0.52, maxW: 0.86 }); texto(c, W, H, 'FC', { size: H * 0.12, color: AMARILLO, y: 0.74 }); },
-      mochila: (c, W, H) => { texto(c, W, H, 'WESTCOL', { size: H * 0.12, color: NAVY, y: 0.2, maxW: 0.8 }); texto(c, W, H, '1', { size: H * 0.56, color: NAVY, y: 0.6 }); },
-      muslo: (c, W, H) => { c.fillStyle = AMARILLO; c.fillRect(W * 0.08, 0, W * 0.1, H); c.fillRect(W * 0.82, 0, W * 0.1, H); },
-      espinillera: (c, W, H) => { c.fillStyle = NAVY; for (let k = 0; k < 3; k++) c.fillRect(W * 0.08, H * (0.06 + k * 0.05), W * 0.84, H * 0.022); },
     },
     glow: {},
   },
