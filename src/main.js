@@ -518,7 +518,7 @@ function setAcc(c) { document.documentElement.style.setProperty('--acc', c); }
 function goCh(i, inst = false) {
   i = Math.max(0, Math.min(CH.length - 1, i)); if (i === S.ch && !inst) return;
   const c = CH[i]; S.ch = i; if (c.k === 'garage') S.idx = c.i;
-  $$('#chapters a').forEach((a, k) => { a.classList.toggle('on', k === i); a.toggleAttribute('aria-current', k === i); });
+  $$('#chapters a').forEach((a, k) => { a.classList.toggle('on', k === i); a.toggleAttribute('aria-current', k === i); if (k === i) a.scrollIntoView({ inline: 'nearest', block: 'nearest' }); });
   const run = () => setMode(c.k);
   const col = c.k === 'garage' ? acentoActual() : '#e8c27a';
   const nombre = c.k === 'garage' ? titulo(ARTISTAS[c.i].conceptos[S.concept[c.i]]?.nombre || ARTISTAS[c.i].nombre) : c.n;
@@ -582,7 +582,7 @@ function fillGarage() {
   gsap.fromTo('#g-logo', { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.9, ease: 'expo.out' });
   palabras($('#g-concept'), c ? titulo(c.nombre) + '.' : 'En diseño.');
   $('#g-idea').textContent = c ? c.idea : 'Su piel está en diseño.';
-  $('#g-concepts').innerHTML = a.conceptos.map((k, j) => `<button class="tab ${j === ci ? 'on' : ''}" data-c="${j}" aria-pressed="${j === ci}"><b>${k.id} · ${esc(k.nombre)}</b><span class="sw">${k.paleta.slice(0, 5).map(p => `<i style="background:${p}"></i>`).join('')}</span><small>${j === 0 ? 'PRINCIPAL' : 'VARIANTE'}</small></button>`).join('');
+  $('#g-concepts').innerHTML = a.conceptos.map((k, j) => `<button class="tab ${j === ci ? 'on' : ''}" data-c="${j}" aria-pressed="${j === ci}"><b>${j + 1} · ${esc(k.nombre)}</b><span class="sw">${k.paleta.slice(0, 5).map(p => `<i style="background:${p}"></i>`).join('')}</span><small>${j === 0 ? 'PRINCIPAL' : 'VARIANTE'}</small></button>`).join('');
   $$('#g-concepts .tab').forEach(b => b.onclick = () => pickConcept(+b.dataset.c));
   $('#g-concepts .tab.on')?.scrollIntoView({ inline: 'nearest', block: 'nearest' });
   const fins = c ? [...new Set(Object.values(c.z).map(z => z[1] === 'factorym' ? 'factory' : z[1]))] : [];
@@ -694,7 +694,7 @@ function showInfo(m, ev) {
   if (m.material.emissive && !m.userData.libre) { const mm = m.material; mm.emissive.set(acentoActual()); mm.emissiveIntensity = 0.8; gsap.to(mm, { emissiveIntensity: 0, duration: 0.9 }); }
   sfx.blip();
 }
-function hideInfo() { $('#info')?.classList.remove('show', 'ficha'); $('#b-ficha')?.classList.remove('on'); }
+function hideInfo() { $('#info')?.classList.remove('show', 'ficha'); $('#b-ficha')?.classList.remove('on'); document.body.classList.remove('con-ficha'); }
 // ficha de instalación: panel por panel, lo que se corta, de qué color y con qué acabado
 const ORDEN_Z = ['casco', 'coronilla', 'pecho', 'pecho_inf', 'mochila', 'hombro', 'brazo', 'antebrazo', 'cadera', 'muslo', 'rodilla', 'espinillera', 'bota'];
 function ficha() {
@@ -702,7 +702,7 @@ function ficha() {
   const a = ARTISTAS[S.idx], r = robots[S.idx], piel = pielDe(a, r.userData.modo), c = a.conceptos[S.concept[S.idx]];
   const filas = ORDEN_Z.map(z => { const sp = piel.z[z]; const imp = !!piel.p?.[z] || !!c?.mats; return `<tr><td>${ZONAS[z].nombre}</td><td><i style="background:${sp?.[0] || '#555'}"></i>${sp ? (FN[sp[1]] || sp[1]) : '—'}</td><td>${imp && piel.p?.[z] ? 'Impreso' : ''}</td></tr>`; }).join('');
   el.innerHTML = `<div class="i-k">FICHA DE INSTALACIÓN · ${MODELO.corto}</div><div class="i-n">${esc(titulo(r.userData.modo === 'fabrica' ? 'De fábrica' : c?.nombre || ''))}</div><table class="fi"><tbody>${filas}</tbody></table><p>Sin forrar: visor y cámaras, rejillas, juntas y articulaciones, manos, puertos y emblema. Ningún impreso cruza una junta.</p>`;
-  el.style.left = ''; el.style.top = ''; el.classList.add('show', 'ficha'); $('#b-ficha').classList.add('on'); sfx.blip();
+  el.style.left = ''; el.style.top = ''; el.classList.add('show', 'ficha'); $('#b-ficha').classList.add('on'); document.body.classList.add('con-ficha'); sfx.blip();
 }
 
 // etiquetas del despiece
@@ -740,7 +740,7 @@ function updateLabels() {
   }
   if (pts.length) {
     pts.sort((p, q) => p.sy - q.sy);
-    const colX = Math.min(Math.max(...pts.map(p => p.sx)) + 70, innerWidth - 196); let prev = 64; const maxY = innerHeight - 150; const op = Math.min(1, (e - 0.3) * 3);
+    const colX = Math.min(Math.max(...pts.map(p => p.sx)) + 70, innerWidth - 196); let prev = 64; let maxY = innerHeight - 150; const yt = $("#yt-mini"); if (isNarrow() && yt?.classList.contains("show")) maxY = Math.min(maxY, yt.getBoundingClientRect().top - 24); const op = Math.min(1, (e - 0.3) * 3);
     for (const p of pts) {
       const ly = Math.min(Math.max(p.sy, prev + 38), maxY); prev = ly;
       p.el.style.opacity = op; p.el.style.transform = `translate(${colX}px, ${ly - 12}px)`;

@@ -86,7 +86,7 @@ body[data-mode=select] #select,body[data-mode=garage] #garage{opacity:1;visibili
 .sel-head{position:absolute;left:36px;top:120px;max-width:560px}
 .sel-head h2,.g-concept,#piel h2,#piel h3{font-family:var(--serif);font-weight:400;letter-spacing:-.02em}
 .sel-head h2{font-size:clamp(40px,5vw,78px);line-height:.98;margin:16px 0 18px}
-.sel-head h2 em{color:var(--gold)}
+.sel-head h2 em{display:block;color:var(--gold);text-wrap:balance}
 .sel-head p{font-size:16px;line-height:1.6;color:var(--ink2);max-width:380px}
 #tags{position:fixed;inset:0;pointer-events:none;z-index:9}
 .tag{position:absolute;top:0;left:0;text-align:center;opacity:0;transition:opacity .4s var(--ease);pointer-events:none;cursor:pointer;width:200px;margin-left:-100px}
@@ -207,6 +207,7 @@ body[data-mode=piel] #top{background:linear-gradient(rgba(7,7,8,.94) 55%,rgba(7,
 .rv.in{opacity:1;transform:none}
 #piel h2{font-size:clamp(52px,8vw,124px);line-height:.92;margin:16px 0 28px}
 #piel h2 em,#piel h3 em{color:var(--gold)}
+#piel h2 em{display:block;text-wrap:balance}
 .ph p{max-width:62ch;font-size:18px;line-height:1.6;color:var(--ink2)}
 .stack{margin:130px 0 60px;display:grid;grid-template-columns:1.2fr 1fr;align-items:center;gap:40px;min-height:460px;perspective:1400px}
 .sec{margin:140px 0}.despiece video{display:block;width:min(520px,100%);aspect-ratio:4/5;object-fit:cover;border:1px solid var(--line);box-shadow:0 40px 80px rgba(0,0,0,.6)}
@@ -261,6 +262,10 @@ body.titulando .ui,body.titulando #tags,body.titulando #labels,body.titulando #l
 .pill.tour{border-color:var(--acc-t);color:var(--ink)}
 .pill.tour.on{background:var(--acc-t);color:#0b0b0c}
 body.touring .g-left{opacity:0}
+/* velo a la izquierda: el texto del panel caía sobre los aros de luz amarilla del set y perdía contraste */
+#garage::before{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(7,7,8,.78) 0,rgba(7,7,8,.5) 26%,rgba(7,7,8,0) 44%);transition:opacity .4s var(--ease)}
+body.touring #garage::before{opacity:0}
+@media (max-width:820px), (max-aspect-ratio:9/10){ #garage::before{display:none} }
 
 #cierre{position:fixed;inset:0;z-index:16;display:none}
 body[data-mode=cierre] #cierre{display:block}
@@ -312,6 +317,10 @@ body[data-mode=intro] #intro{display:block}
   .ticker{display:none}
   #chapters{display:flex;overflow-x:auto;gap:16px;scrollbar-width:none;padding:0 4px;margin:0 -4px}
   #chapters a{flex:0 0 auto;font-size:11px;min-height:44px;padding:16px 0 10px}
+  /* en el celular los 5 capítulos no cabían y el 05 quedaba fuera de pantalla: los inactivos muestran solo su número */
+  #chapters{gap:8px;justify-content:space-between}
+  #chapters a:not(.on){font-size:0;min-width:44px;text-align:center}
+  #chapters a b{font-size:11px}#chapters a:not(.on) b{margin-right:0}
   .cover h1{font-size:68px}
   .lockup{gap:14px}
   .who{font-size:11px;letter-spacing:.12em}
@@ -327,9 +336,9 @@ body[data-mode=intro] #intro{display:block}
   .g-render{display:none}
   #wp-name{font-size:54px}
   .dock{right:calc(16px + var(--safe-r));left:calc(16px + var(--safe-l));bottom:calc(58px + var(--safe-b));justify-content:space-between;flex-wrap:wrap;gap:8px}
-  /* dos filas: modo + zonas + giro / despiece + recorrido */
-  #g-mode{order:1}#b-xray{order:2}#b-rot{order:3}#b-tour{order:5}
-  .exp{order:4;flex:1 1 190px;min-height:44px;padding:0 14px}#d-explode{width:100%;height:44px}
+  /* dos filas: modo + ficha + zonas / giro + despiece + recorrido (Ficha sin orden caía primero y abría una 3.ª fila que tapaba las pestañas) */
+  #g-mode{order:1}#b-ficha{order:2}#b-xray{order:3}#b-rot{order:4}#b-tour{order:6}
+  .exp{order:5;flex:1 1 0;min-width:0;gap:8px;min-height:44px;padding:0 12px}.exp span{font-size:11px;letter-spacing:.06em}#d-explode{width:100%;min-width:0;height:44px}
   #d-explode::-webkit-slider-thumb{width:26px;height:26px;margin-top:-12px}
   #d-explode::-moz-range-thumb{width:20px;height:20px}
   .seg button,.pill{padding:8px 12px;font-size:11px;letter-spacing:.06em;min-height:44px}
@@ -412,7 +421,7 @@ html:has(:focus-visible) #cursor{opacity:0}
 #yt-mini iframe{display:block;width:236px;height:133px;border-radius:6px}
 #yt-mini .yt-k{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--acc-t);margin-bottom:8px}
 #yt-mini .yt-info{margin-top:8px}
-#yt-mini b{display:block;font-family:var(--serif);font-style:italic;font-weight:600;font-size:18px;color:var(--ink)}
+#yt-mini b{display:block;font-family:var(--serif);font-style:italic;font-weight:600;font-size:18px;color:var(--ink);text-wrap:balance}
 #yt-mini span{display:block;margin-top:2px;font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--mute);text-transform:uppercase}
 .nav-prev{display:none}
 .g-left{bottom:250px!important;justify-content:flex-end}
@@ -457,17 +466,36 @@ html:has(:focus-visible) #cursor{opacity:0}
   .g-render{width:min(200px,16vw)}
   .g-render figcaption{margin-top:10px}.card3 figcaption b{font-size:20px}
   .g-render .lb-btn{letter-spacing:.06em;white-space:nowrap}
+  /* pestañas como chips que fluyen: 5 diseños en 2 filas en vez de 3 (el panel se salía por arriba y pisaba la marca) */
+  .g-idea{max-width:440px}
+  .tabs{display:flex;flex-wrap:wrap;gap:6px}
+  .tab{flex:0 0 auto;padding:8px 12px;gap:6px}
+}
+/* escritorio medio (≈1440×900): con 5 diseños y una idea de 5 líneas el panel subía hasta pisar la marca del header.
+   Se compacta el logo y se quita la etiqueta PRINCIPAL/VARIANTE (la A ya es la principal) */
+@media (min-width:821px) and (min-height:821px) and (max-height:1000px) and (min-aspect-ratio:9/10){
+  .g-logo{height:60px;margin:10px 0 6px}.g-logo img{max-height:60px}.g-logo .lg-text{font-size:44px}
+  .g-idea{margin-top:14px;max-width:440px}
+  .tab small{display:none}
+  .tabs{margin-top:18px}
 }
 /* con sitio a la izquierda del dock, el reproductor baja a su línea y deja respirar las pestañas */
-@media (min-width:1160px) and (max-width:1399px) and (max-height:820px) and (min-aspect-ratio:9/10){ #yt-mini{bottom:104px} }
-@media (min-width:821px) and (max-width:1159px) and (max-height:820px) and (min-aspect-ratio:9/10){ .g-idea{display:none} }
+/* el dock mide ~853px: el reproductor solo cabe en su línea desde ~1264px (antes, desde 1160, se montaban) */
+@media (min-width:1264px) and (max-width:1399px) and (max-height:820px) and (min-aspect-ratio:9/10){ #yt-mini{bottom:104px;width:320px} .g-left{bottom:252px!important} }
+@media (min-width:821px) and (max-width:1263px) and (max-height:820px) and (min-aspect-ratio:9/10){ .g-idea{display:none} }
 
 /* ficha de instalación */
-#info.ficha{left:auto!important;top:50%!important;right:24px;transform:translateY(-50%);width:min(340px,calc(100vw - 32px));max-height:calc(100dvh - 200px);overflow:auto}
-#info .fi{width:100%;border-collapse:collapse;margin:10px 0 8px;font-size:13px}
-#info .fi td{padding:6px 4px;border-bottom:1px solid rgba(241,237,230,.1);vertical-align:middle}
+/* arriba del todo bajo el header y terminando encima de "Siguiente" (bottom 162 + ~90 de alto): antes lo tapaba, y en 1280×720 también al dock */
+#info.ficha{left:auto!important;top:96px!important;right:36px;transform:none;width:min(360px,calc(100vw - 32px));max-height:calc(100dvh - 96px - 268px);overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:rgba(241,237,230,.28) transparent}
+#info.ficha .i-k{text-transform:uppercase;text-wrap:balance}
+#info.ficha .i-n{margin:4px 0 2px}
+#info .fi{width:100%;border-collapse:collapse;margin:8px 0;font-size:13px}
+#info .fi td{padding:5px 4px;border-bottom:1px solid rgba(241,237,230,.1);vertical-align:middle}
+@media (min-width:821px) and (max-height:820px){#info .fi td{padding:4px}#info.ficha p{font-size:13px;margin-top:8px}}
 #info .fi td:nth-child(2){white-space:nowrap}
 #info .fi td:nth-child(3){color:#e8c27a;font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;text-align:right}
 #info .fi i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:8px;vertical-align:-1px;box-shadow:0 0 0 1px rgba(241,237,230,.25)}
-@media (max-width:820px){#info.ficha{right:16px;top:auto!important;bottom:150px;transform:none;max-height:50dvh}}
+@media (max-width:820px){#info.ficha{right:16px;top:auto!important;bottom:calc(166px + var(--safe-b));transform:none;max-height:min(50dvh,calc(100dvh - 300px));background:rgba(8,8,10,.98)}}
 .fin-acero{background:repeating-linear-gradient(115deg,#9ea1a7 0 2px,#6c6f75 2px 4px,#b8bbc1 4px 5px)}
+body.con-ficha #g-next{opacity:0;pointer-events:none}
+@media (min-width:821px){body.con-ficha #info.ficha{max-height:calc(100dvh - 190px)}}
