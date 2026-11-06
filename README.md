@@ -1,4 +1,6 @@
-# Segunda piel · Westcol × Blessd
+# Westcol vs Blessd · Pelea de robots · Stream Fighters 5
+
+Presentación 3D de la pelea de robots de **Stream Fighters 5** (14 de noviembre de 2026, Coliseo MedPlus, Bogotá): dos **EngineAI T800 Max** en un ring de boxeo, cada uno con su colección de pieles **Segunda piel**. Identidad visual tomada de streamfighters.co (Bebas Neue, Inter, azul #5b7cff, violeta #9a6bff, rojo #ff3d50).
 
 Experiencia 3D sobre dos robots **EngineAI T800 Max** forrados en película PPF. Está construida con Vite, three.js y GSAP.
 
@@ -18,7 +20,9 @@ npm run preview   # sirve dist/ en local
 | `index.html` | Marcado de todas las secciones: portada, selección, capítulo de cada robot, La piel y cierre |
 | `src/main.js` | Escena 3D, estados, cámara, UI, sonido y carga |
 | `src/datos.js` | Modelo, colores de fábrica, zonas y **colección de Westcol** (W Sound Oro, Kick, Kid W, G Wagon, Rayo W) |
-| `src/estudio.js` | Estudio fotográfico procedural: ciclorama, piso con reflejo, luces y polvo |
+| `src/ring.js` | Ring de boxeo procedural: lona con el sello del evento, cuerdas, esquina roja (Westcol) y azul (Blessd), torre de luces, pantallas y público |
+| `src/impresos.js` | Impresos de cada piel dentro de las zonas planas reales de cada panel |
+| `src/blessd_extra.js` | Pieles adicionales de Blessd |
 | `src/cierre.js` / `cierre.css` | Animación de cierre |
 | `src/diagramas.css` | Diagramas SVG de La piel: capas, proceso y regla |
 | `public/` | Assets ya optimizados |

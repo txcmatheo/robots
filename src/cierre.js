@@ -185,7 +185,7 @@ export function mostrarCierre(contenedor, { acentos = ['#F4A3C4', '#2651B5'], no
       c === ' ' ? '<span class="cz-chm" style="width:.28em"><span class="cz-ch">&nbsp;</span></span>'
         : `<span class="cz-chm"><span class="cz-ch">${c}</span></span>`).join('');
     // cuatro hilos: los dos colores, cada uno desde dos esquinas
-    const colores = [acentos[0], acentos[1], acentos[1], acentos[0]].map((c) => c || '#e8c27a');
+    const colores = [acentos[0], acentos[1], acentos[1], acentos[0]].map((c) => c || '#a9bbff');
     root.innerHTML = `
       <canvas class="cz-fx" aria-hidden="true"></canvas>
       <div class="cz-vig"></div>

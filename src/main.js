@@ -14,7 +14,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { DecalGeometry } from 'three/addons/geometries/DecalGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { crearEstudio } from './estudio.js';
+import { crearRing } from './ring.js';
 import { mostrarCierre, ocultarCierre } from './cierre.js';
 import { IMPRESOS } from './impresos.js';
 import { BLESSD_EXTRA } from './blessd_extra.js';
@@ -254,11 +254,11 @@ function setXray(robot, on) {
 }
 
 // ================= ESCENARIO =================
-const estudio = crearEstudio(scene, renderer);
+const estudio = crearRing(scene, renderer);
 function backdrop(color, k) { estudio.setAcento(color, Math.min(1, k * 2.5)); gsap.to(particles.material.color, { ...new THREE.Color(color).lerp(new THREE.Color('#ffffff'), 0.35), duration: 1.2 }); }
 // gobo: el logo de cada dueño proyectado en la pared del estudio
 const gobo = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, fog: false }));
-gobo.position.set(0, 3.3, -10.2); gobo.visible = false; scene.add(gobo);
+gobo.visible = false;
 const goboTex = {};
 function goboDe(a) {
   if (goboTex[a.id]) return goboTex[a.id];
@@ -270,7 +270,8 @@ function goboDe(a) {
   }
   goboTex[a.id] = t; return t;
 }
-function goboShow(a, color) {
+function goboShow() { }
+function goboShowViejo(a, color) {
   const t = goboDe(a); const asp = t.userData.asp || 1; const hgt = asp > 1.5 ? 3.4 : 5.2;
   gsap.to(gobo.material, { opacity: 0, duration: 0.35, onComplete: () => {
     gobo.material.map = t; gobo.material.needsUpdate = true; gobo.scale.set(hgt * asp, hgt, 1); gobo.visible = true;
@@ -290,7 +291,22 @@ function beamMat(color) {
 }
 
 const robots = []; const stands = [];
-const POS = [-0.85, 0.85];
+const POS = [-0.95, 0.95];
+// Stream Fighters 5: Westcol en la esquina roja, Blessd en la azul
+const ESQUINA = [{ nombre: 'ESQUINA ROJA', color: '#ff3d50' }, { nombre: 'ESQUINA AZUL', color: '#5b7cff' }];
+// cuenta regresiva a la pelea: 14 de noviembre de 2026, 6:00 p. m. hora de Bogotá
+const PELEA = new Date('2026-11-14T18:00:00-05:00');
+function cuentaRegresiva() {
+  const el = document.getElementById('cuenta'); if (!el) return;
+  const pinta = () => {
+    let d = Math.max(0, PELEA - Date.now()); if (!document.body.contains(el)) return clearInterval(tm);
+    if (d === 0) { el.innerHTML = '<div><b>HOY</b><small>Coliseo MedPlus</small></div>'; return; }
+    const u = [['Días', 864e5], ['Horas', 36e5], ['Min', 6e4], ['Seg', 1e3]].map(([n, ms]) => { const v = Math.floor(d / ms); d -= v * ms; return `<div><b>${String(v).padStart(2, '0')}</b><small>${n}</small></div>`; });
+    el.innerHTML = u.join('');
+  };
+  pinta(); const tm = setInterval(pinta, 1000);
+}
+const CARA = [0.55, -0.55]; // giro hacia el rival sin dar la espalda a la cámara
 const particles = (() => {
   const n = 500, g = new THREE.BufferGeometry(), p = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) { p[i * 3] = (Math.random() - 0.5) * 14; p[i * 3 + 1] = Math.random() * 5; p[i * 3 + 2] = (Math.random() - 0.5) * 10; }
@@ -499,7 +515,7 @@ async function construir() {
   if (!src) throw new Error('No se pudo cargar el modelo oficial del T800 Max');
   ARTISTAS.forEach((art, i) => {
     const r = robotDesdeGLB(art, src);
-    r.position.set(POS[i], 0, 0); r.rotation.y = -POS[i] * 0.15; scene.add(r); robots.push(r);
+    r.position.set(POS[i], 0, 0); r.rotation.y = CARA[i]; scene.add(r); robots.push(r);
     const st = new THREE.Group();
     const ring = new THREE.Mesh(new THREE.CircleGeometry(0.75, 64), new THREE.MeshBasicMaterial({ map: ringTex, color: new THREE.Color(art.acento).multiplyScalar(1.6), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
     ring.rotation.x = -Math.PI / 2; ring.position.y = 0.004; ring.visible = false;
@@ -523,7 +539,7 @@ function camSelect() { const n = isNarrow(), z = 5.4 + Math.max(0, 1.7 - innerWi
 function camGarage() { const n = isNarrow(); camTo(V(0.4, n ? 0.95 : 1.1, n ? 6.2 : 4.5), V(n ? 0 : -0.45, n ? 0.45 : 0.92, 0), 1.9); }
 
 // ================= CAPÍTULOS =================
-const CH = [{ k: 'select', n: 'Los dos' }, ...ARTISTAS.map((a, i) => ({ k: 'garage', i, n: a.nombre })), { k: 'piel', n: 'La piel' }, { k: 'cierre', n: 'Cierre' }];
+const CH = [{ k: 'select', n: 'Cara a cara' }, ...ARTISTAS.map((a, i) => ({ k: 'garage', i, n: a.nombre })), { k: 'piel', n: 'La piel' }, { k: 'cierre', n: 'Cierre' }];
 function acentoActual() { const a = ARTISTAS[S.idx]; return a.conceptos[S.concept[S.idx]]?.acento || a.acento; }
 function setAcc(c) { document.documentElement.style.setProperty('--acc', c); }
 function goCh(i, inst = false) {
@@ -531,7 +547,7 @@ function goCh(i, inst = false) {
   const c = CH[i]; S.ch = i; if (c.k === 'garage') S.idx = c.i;
   $$('#chapters a').forEach((a, k) => { a.classList.toggle('on', k === i); a.toggleAttribute('aria-current', k === i); if (k === i) a.scrollIntoView({ inline: 'nearest', block: 'nearest' }); });
   const run = () => setMode(c.k);
-  const col = c.k === 'garage' ? acentoActual() : '#e8c27a';
+  const col = c.k === 'garage' ? acentoActual() : '#a9bbff';
   const nombre = c.k === 'garage' ? titulo(ARTISTAS[c.i].conceptos[S.concept[c.i]]?.nombre || ARTISTAS[c.i].nombre) : c.n;
   sfx.whoosh(); inst || REDUCIDO ? run() : transition(run, col, [String(i + 1).padStart(2, '0'), nombre]);
 }
@@ -544,8 +560,8 @@ function setMode(mode) {
   robots.forEach(r => { if (r.userData.xray) setXray(r, false); });
   S.explode = 0; robots.forEach(r => setExplode(r, 0)); syncDock(); $('#xray-legend').classList.remove('show');
   if (mode === 'select') {
-    robots.forEach((r, i) => { r.visible = true; gsap.to(r.position, { x: POS[i], y: 0, duration: 1.4, ease: 'power3.inOut' }); gsap.to(r.rotation, { y: -POS[i] * 0.15, duration: 1.4 }); gsap.to(stands[i].g.position, { x: POS[i], duration: 1.4, ease: 'power3.inOut' }); });
-    camSelect(); setAcc('#e8c27a'); backdrop('#e8c27a', 0.22); highlight(S.idx); sfx.musica('musica'); goboHide();
+    robots.forEach((r, i) => { r.visible = true; gsap.to(r.position, { x: POS[i], y: 0, duration: 1.4, ease: 'power3.inOut' }); gsap.to(r.rotation, { y: CARA[i], duration: 1.4 }); gsap.to(stands[i].g.position, { x: POS[i], duration: 1.4, ease: 'power3.inOut' }); });
+    camSelect(); setAcc('#a9bbff'); backdrop('#a9bbff', 0.22); highlight(S.idx); sfx.musica('musica'); goboHide();
     robots.forEach((r, i) => { if (r.userData.modo !== S.concept[i]) setTimeout(() => vestir(r, S.concept[i], true), 300 + i * 250); });
   }
   if (mode === 'garage') {
@@ -561,9 +577,9 @@ function setMode(mode) {
   }
   if (mode === 'cierre') {
     goboHide(); sfx.musica('musica'); sfx.boom();
-    mostrarCierre($('#cierre'), { acentos: ARTISTAS.map(x => x.conceptos[0]?.acento || x.acento), nombres: ARTISTAS.map(x => x.nombre), sub: MODELO.nombre + ' · PPF' });
+    mostrarCierre($('#cierre'), { acentos: ARTISTAS.map(x => x.conceptos[0]?.acento || x.acento), nombres: ARTISTAS.map(x => x.nombre), sub: 'STREAM FIGHTERS 5 · 14 NOV · BOGOTÁ' });
   }
-  if (mode === 'piel') { goboHide(); camTo(V(0, 2.2, 10), V(0, 1.1, 0), 2.2); backdrop('#e8c27a', 0.2); openPiel(); sfx.musica('musica'); }
+  if (mode === 'piel') { goboHide(); camTo(V(0, 2.2, 10), V(0, 1.1, 0), 2.2); backdrop('#a9bbff', 0.2); openPiel(); sfx.musica('musica'); }
 }
 function highlight(i) {
   stands.forEach((s, k) => { gsap.to(s.glow.material, { opacity: k === i ? 0.4 : 0.08, duration: 0.6 }); gsap.to(s.spot, { intensity: k === i ? 6 : 2, duration: 0.6 }); });
@@ -588,7 +604,7 @@ function palabras(el, text) {
 function fillGarage() {
   const a = ARTISTAS[S.idx], ci = S.concept[S.idx], c = a.conceptos[ci];
   setAcc(acentoActual()); backdrop(acentoActual(), 0.3);
-  $('#g-unit').textContent = `${String(S.ch + 1).padStart(2, '0')} · ${MODELO.corto}`;
+  $('#g-unit').textContent = `${ESQUINA[S.idx].nombre} · ${MODELO.corto}`;
   $('#g-logo').innerHTML = logoHTML(a);
   gsap.fromTo('#g-logo', { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.9, ease: 'expo.out' });
   palabras($('#g-concept'), c ? titulo(c.nombre) + '.' : 'En diseño.');
@@ -768,7 +784,7 @@ function buildTags() {
   ARTISTAS.forEach((a, i) => {
     const d = document.createElement('button'); d.className = 'tag'; d.type = 'button'; d.style.setProperty('--c', a.conceptos[0]?.acento || a.acento);
     d.setAttribute('aria-label', `Abrir el robot de ${a.nombre}`);
-    d.innerHTML = `<div class="lg">${logoHTML(a)}</div><span class="cn">${esc(a.conceptos[0]?.nombre || 'EN DISEÑO')}</span><span class="ow">${MODELO.corto}</span><span class="go">ABRIR →</span>`;
+    d.innerHTML = `<div class="lg">${logoHTML(a)}</div><span class="cn">${esc(a.conceptos[0]?.nombre || 'EN DISEÑO')}</span><span class="ow" style="color:${ESQUINA[i].color}">${ESQUINA[i].nombre}</span><span class="go">VER ESQUINA →</span>`;
     d.onmouseenter = d.onfocus = () => { if (S.mode === 'select' && S.idx !== i) { S.idx = i; highlight(i); sfx.hover(); } };
     d.onclick = () => goCh(1 + i);
     box.appendChild(d); tagEls.push(d);
@@ -802,11 +818,11 @@ function wireUI() {
     await vestir(r, toFab ? 'fabrica' : S.concept[S.idx], true);
   });
   $('#snd').onclick = () => { const on = sfx.toggle(); $('#snd').classList.toggle('off', !on); $('#snd').setAttribute('aria-pressed', on); };
-  $('#chapters').innerHTML = CH.map((c, i) => `<a href="#" role="button" data-i="${i}" style="--c:${c.k === 'garage' ? (ARTISTAS[c.i].conceptos[0]?.acento || ARTISTAS[c.i].acento) : '#e8c27a'}"><b>${String(i + 1).padStart(2, '0')}</b>${c.n}</a>`).join('');
+  $('#chapters').innerHTML = CH.map((c, i) => `<a href="#" role="button" data-i="${i}" style="--c:${c.k === 'garage' ? (ARTISTAS[c.i].conceptos[0]?.acento || ARTISTAS[c.i].acento) : '#a9bbff'}"><b>${String(i + 1).padStart(2, '0')}</b>${c.n}</a>`).join('');
   $$('#chapters a').forEach(a => a.onclick = e => { e.preventDefault(); goCh(+a.dataset.i); });
   $('#jump').innerHTML = ARTISTAS.map(a => `<button style="--c:${a.conceptos[0]?.acento || a.acento}">${a.nombre} →</button>`).join('');
   $$('#jump button').forEach((b, i) => b.onclick = () => goCh(1 + i));
-  const tk = ['SEGUNDA PIEL', ...ARTISTAS.map(a => `${a.nombre} — ${a.conceptos[0]?.nombre || 'EN DISEÑO'}`), MODELO.nombre, 'PELÍCULA DE PROTECCIÓN, PANEL POR PANEL', 'NUNCA SE TAPA UN SENSOR', 'DISEÑO SOBRE EL MODELO OFICIAL'].join('  ·  ') + '  ·  ';
+  const tk = ['STREAM FIGHTERS 5', 'WESTCOL VS BLESSD', 'PELEA DE ROBOTS', '14 NOV 2026 · COLISEO MEDPLUS · BOGOTÁ', 'SEGUNDA PIEL', ...ARTISTAS.map(a => `${a.nombre} — ${a.conceptos[0]?.nombre || 'EN DISEÑO'}`), MODELO.nombre, 'PELÍCULA DE PROTECCIÓN, PANEL POR PANEL', 'NUNCA SE TAPA UN SENSOR', 'DISEÑO SOBRE EL MODELO OFICIAL'].join('  ·  ') + '  ·  ';
   $('#ticker-in').textContent = tk + tk + tk;
 
   let down = null, pend = null;
@@ -850,7 +866,7 @@ function wireUI() {
 function rootOf(o) { while (o && !robots.includes(o)) o = o.parent; return o; }
 
 // transición de cine sobre el 3D en vivo
-function transition(mid, color = '#e8c27a', label = null) {
+function transition(mid, color = '#a9bbff', label = null) {
   const w = $('#wipe'); w.style.setProperty('--wc', color);
   const stk = $('#wp-stk'); stk.innerHTML = Array.from({ length: 14 }, () => `<i style="top:${6 + Math.random() * 88}%;height:${1 + Math.random() * 3}px;width:${20 + Math.random() * 50}vw"></i>`).join('');
   $('#wp-n').textContent = label ? label[0] : '';
@@ -891,7 +907,8 @@ function openPiel() {
 // ================= PORTADA =================
 const BOOT_LINES = ['CARGANDO MODELO OFICIAL ' + MODELO.nombre, 'PANELES Y ZONAS SIN FORRAR', 'PIELES DE WESTCOL · BLESSD', 'LISTO'];
 async function boot() {
-  $('.cover h1').innerHTML = [...'Segunda '].map(c => `<span class="ch">${c === ' ' ? '&nbsp;' : c}</span>`).join('') + '<em>' + [...'piel.'].map(c => `<span class="ch">${c}</span>`).join('') + '</em>';
+  $('.cover h1').innerHTML = [...'Westcol '].map(c => `<span class="ch">${c === ' ' ? '&nbsp;' : c}</span>`).join('') + '<em>' + [...'vs'].map(c => `<span class="ch">${c}</span>`).join('') + '</em>' + [...' Blessd'].map(c => `<span class="ch">${c === ' ' ? '&nbsp;' : c}</span>`).join('');
+  cuentaRegresiva();
   gsap.fromTo('.cover h1 .ch', { yPercent: 110, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 1.2, stagger: 0.04, ease: 'expo.out', delay: 0.05 });
   gsap.fromTo(['.lockup > *', '.who'], { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 1.2, stagger: 0.15, ease: 'expo.out', delay: 0.3 });
   const log = $('#boot-log'); const bar = $('#boot-bar i'); const pct = $('#boot-pct');
@@ -911,7 +928,7 @@ async function boot() {
   bar.style.transform = 'scaleX(1)'; pct.textContent = '100';
   // portada viva: el estudio en penumbra, los dos en silueta y la cámara que se acerca
   LUZ0 = { k: key.intensity, r: rim1.intensity, h: scene.environmentIntensity };
-  key.intensity = 0.06; rim1.intensity = 0.8; scene.environmentIntensity = 0.16; backdrop('#e8c27a', 0.14);
+  key.intensity = 0.06; rim1.intensity = 0.8; scene.environmentIntensity = 0.16; backdrop('#a9bbff', 0.14);
   robots.forEach(r => vestir(r, 'fabrica')); stands.forEach(s => { s.spot.intensity = 0.7; });
   camera.position.set(0, 1.15, 9); look.set(0, 1.0, 0);
   gsap.to(camera.position, { z: 6.2, y: 0.75, duration: 26, ease: 'sine.inOut' });
@@ -929,10 +946,10 @@ function start() {
 // INTRO: el estudio a oscuras; a cada robot le cae su luz, su logo y el escáner le pone la piel
 function intro() {
   S.mode = 'intro'; document.body.dataset.mode = 'intro';
-  robots.forEach((r, i) => { r.position.set(POS[i], 0, 0); r.rotation.y = -POS[i] * 0.15; vestir(r, 'fabrica'); stands[i].g.position.x = POS[i]; });
+  robots.forEach((r, i) => { r.position.set(POS[i], 0, 0); r.rotation.y = CARA[i]; vestir(r, "fabrica"); stands[i].g.position.x = POS[i]; });
   stands.forEach(s => { s.spot.intensity = 0; s.glow.material.opacity = 0; });
   const k0 = LUZ0?.k ?? key.intensity, r0 = LUZ0?.r ?? rim1.intensity, h0 = LUZ0?.h ?? scene.environmentIntensity; gsap.killTweensOf(camera.position);
-  key.intensity = 0.05; rim1.intensity = 0.5; scene.environmentIntensity = 0.12; backdrop('#e8c27a', 0.04);
+  key.intensity = 0.05; rim1.intensity = 0.5; scene.environmentIntensity = 0.12; backdrop('#a9bbff', 0.04);
   camera.position.set(0.5, 0.25, 8.5); look.set(0, 0.95, 0);
   gsap.set(['#top', '#bottom'], { opacity: 0 });
   gsap.fromTo('.io-bars i', { scaleY: 0 }, { scaleY: 1, duration: 1.2, ease: 'expo.out' });
@@ -950,10 +967,10 @@ function intro() {
   });
   const tEnd = T + N * step;
   tl.add(() => {
-    sfx.boom(); setAcc('#e8c27a'); backdrop('#e8c27a', 0.22);
+    sfx.boom(); setAcc('#a9bbff'); backdrop('#a9bbff', 0.22);
     stands.forEach(s => gsap.to(s.spot, { intensity: 4, duration: 0.8 }));
     gsap.to(key, { intensity: k0, duration: 1.6 }); gsap.to(rim1, { intensity: r0, duration: 1.6 }); gsap.to(scene, { environmentIntensity: h0, duration: 1.6 });
-    $('#io-logo').innerHTML = ''; palabras($('#io-name'), 'Segunda piel.'); $('#io-sub').textContent = 'WESTCOL × BLESSD · ' + MODELO.nombre;
+    $('#io-logo').innerHTML = ''; palabras($('#io-name'), 'Westcol vs Blessd.'); $('#io-sub').textContent = 'STREAM FIGHTERS 5 · 14 NOV · COLISEO MEDPLUS';
     gsap.fromTo('.io-c', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, ease: 'expo.out' });
   }, tEnd)
     .to(camera.position, { x: -0.55, y: 1.15, z: 5.4, duration: 2.6, ease: 'power3.inOut' }, tEnd)
@@ -969,7 +986,7 @@ function golpe(i) {
   gsap.fromTo(stands[i].glow.material, { opacity: 0.9 }, { opacity: 0.35, duration: 1.2 });
   $('#io-logo').innerHTML = logoHTML(a);
   palabras($('#io-name'), c ? titulo(c.nombre) + '.' : a.nombre);
-  $('#io-sub').textContent = `${a.nombre} · ${MODELO.nombre}`;
+  $('#io-sub').textContent = `${ESQUINA[i].nombre} · ${MODELO.nombre}`;
   gsap.fromTo('.io-c', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.7, ease: 'expo.out' });
   gsap.to('.io-c', { opacity: 0, y: -10, duration: 0.4, delay: 2.4 });
   introT.push(setTimeout(() => { if (S.mode === 'intro') vestir(robots[i], S.concept[i], true); }, 380));
@@ -1024,7 +1041,7 @@ function loop(now) {
     u.body.position.y = Math.sin(t * 1.4 + i) * 0.003 + e * 0.32;
     u.body.rotation.y = THREE.MathUtils.lerp(u.body.rotation.y, S.mode === 'select' ? S.mx * 0.6 : 0, 0.05);
   });
-  particles.rotation.y = t * 0.008; estudio.update(t);
+  particles.rotation.y = t * 0.008; estudio.update(t); estudio.ocultar(camera.position);
   if (S.mode === 'garage') {
     if (gsap.isTweening(look) || gsap.isTweening(camera.position)) { controls.target.copy(look); camera.lookAt(look); }
     else controls.update();

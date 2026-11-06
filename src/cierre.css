@@ -1,6 +1,6 @@
 /* Cierre animado: los dos robots, sus dos colores. Negro, crema, oro. */
 .cz{
-  --cz-negro:#070708; --cz-crema:#f1ede6; --cz-oro:#e8c27a;
+  --cz-negro:#05060d; --cz-crema:#f4f5fb; --cz-oro:#a9bbff;
   --cz-serif:'Bodoni Moda',Didot,'Times New Roman',serif;
   --cz-mono:'JetBrains Mono',ui-monospace,monospace;
   position:absolute; inset:0; overflow:hidden; background:var(--cz-negro);
@@ -12,8 +12,8 @@
 .cz-stage{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px; text-align:center}
 .cz-duo{display:flex; align-items:center; gap:clamp(14px,3vw,40px); font-family:var(--cz-mono); font-weight:700; font-size:clamp(12px,1.6vh,15px); letter-spacing:.16em}
 .cz-duo b{opacity:0; color:color-mix(in srgb,var(--c) 60%,var(--cz-crema))}
-.cz-duo i{font-style:normal; color:rgba(241,237,230,.5); opacity:0}
-.cz-flash{position:absolute; inset:0; background:radial-gradient(circle at 50% 50%, rgba(255,248,230,.9), rgba(232,194,122,.25) 30%, transparent 60%); opacity:0; pointer-events:none}
+.cz-duo i{font-style:normal; color:rgba(244,245,251,.5); opacity:0}
+.cz-flash{position:absolute; inset:0; background:radial-gradient(circle at 50% 50%, rgba(255,248,230,.9), rgba(169,187,255,.25) 30%, transparent 60%); opacity:0; pointer-events:none}
 /* titular */
 .cz-h1{
   position:relative; margin:clamp(14px,3.4vh,40px) 0 0; font-family:var(--cz-serif); font-style:italic;
@@ -25,7 +25,7 @@
 .cz-chm{display:inline-block; overflow:hidden; vertical-align:top; padding:.06em .02em .14em; margin:-.06em -.02em -.14em}
 .cz-h1-shine{
   position:absolute; inset:0; color:transparent; opacity:0; pointer-events:none; --s:90;
-  background:linear-gradient(105deg, transparent 0 42%, rgba(232,194,122,.0) 44%, #e8c27a 49%, #fff6dc 50%, #e8c27a 51%, rgba(232,194,122,.0) 56%, transparent 58% 100%);
+  background:linear-gradient(105deg, transparent 0 42%, rgba(169,187,255,.0) 44%, #a9bbff 49%, #fff6dc 50%, #a9bbff 51%, rgba(169,187,255,.0) 56%, transparent 58% 100%);
   background-size:320% 100%; background-position:calc(var(--s)*1%) 0; background-repeat:no-repeat;
   -webkit-background-clip:text; background-clip:text;
 }
@@ -35,7 +35,7 @@
 .cz-rule i{flex:1; height:2px; display:block; transform-origin:0 50%; transform:scaleX(0); border-radius:2px}
 .cz-m1,.cz-m2{font-family:var(--cz-mono); margin:0; opacity:0; text-wrap:balance}
 .cz-m1{font-weight:700; font-size:clamp(10px, 1.5vh, 13px); letter-spacing:.22em; color:var(--cz-oro); text-transform:uppercase}
-.cz-m2{margin-top:10px; font-weight:400; font-size:clamp(9.5px, 1.35vh, 12px); letter-spacing:.08em; color:rgba(241,237,230,.62); line-height:1.7; max-width:calc(100vw - 32px)}
+.cz-m2{margin-top:10px; font-weight:400; font-size:clamp(9.5px, 1.35vh, 12px); letter-spacing:.08em; color:rgba(244,245,251,.62); line-height:1.7; max-width:calc(100vw - 32px)}
 
 @media (max-width:560px){
   .cz-m1{letter-spacing:.14em}

@@ -1,12 +1,12 @@
 /* Diagramas de "La piel" (capas, proceso, regla) */
 .dg{display:block;width:100%;height:auto;overflow:visible}
 .dg-m{display:none}
-.dg text{fill:#f1ede6}
+.dg text{fill:#f4f5fb}
 .dg .t-n{font-family:'Space Grotesk',system-ui,sans-serif;font-weight:600}
 .dg .t-m{font-family:'JetBrains Mono',ui-monospace,monospace;font-weight:400}
 .dg .t-s{font-family:'Bodoni Moda',Didot,serif;font-style:italic;font-weight:400}
-.dg .t-mu{fill:rgba(241,237,230,.62)}
-.dg .t-gold{fill:#e8c27a}
+.dg .t-mu{fill:rgba(244,245,251,.62)}
+.dg .t-gold{fill:#a9bbff}
 .dg .t-ls{letter-spacing:.14em}
 .dg .t-mid{text-anchor:middle}
 .dg .t-end{text-anchor:end}
