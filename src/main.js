@@ -96,6 +96,8 @@ const sfx = (() => {
 const canvas = $('#c');
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
 const MOVIL = matchMedia('(pointer:coarse)').matches || Math.min(innerWidth, innerHeight) < 700;
+// calidad por niveles: alto (escritorio), medio (celular), bajo (celular modesto o forzado con ?nivel=bajo)
+const NIVEL = new URLSearchParams(location.search).get('nivel') || (!MOVIL ? 'alto' : ((navigator.hardwareConcurrency || 8) <= 4 || (navigator.deviceMemory || 8) <= 3) ? 'bajo' : 'medio');
 const DPR_MAX = MOVIL ? Math.min(devicePixelRatio, 1.3) : Math.min(devicePixelRatio, 1.5);
 let dpr = DPR_MAX;
 renderer.setPixelRatio(dpr);
@@ -121,14 +123,17 @@ controls.addEventListener('change', () => { const t = controls.target, d = new T
 controls.addEventListener('start', () => { canvas.style.cursor = 'grabbing'; }); controls.addEventListener('end', () => { canvas.style.cursor = ''; });
 controls.minDistance = 1.3; controls.maxDistance = 6; controls.maxPolarAngle = Math.PI * 0.62; controls.autoRotateSpeed = 1.6;
 
-const rt = new THREE.WebGLRenderTarget(innerWidth, innerHeight, { samples: MOVIL ? 2 : 4, type: THREE.HalfFloatType });
+const rt = new THREE.WebGLRenderTarget(innerWidth, innerHeight, { samples: NIVEL === 'alto' ? 4 : 2, type: THREE.HalfFloatType });
 const composer = new EffectComposer(renderer, rt);
 composer.setPixelRatio(dpr);
 composer.addPass(new RenderPass(scene, camera));
-// el bloom trabaja a media resolución: casi idéntico y 4 veces más barato
-const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth / 2, innerHeight / 2), 0.3, 0.35, 1.0);
-composer.addPass(bloom);
+// el bloom trabaja a media resolución en escritorio y a un cuarto en celular (casi idéntico y mucho más barato); en nivel bajo no hay
+const BLOOM_DIV = NIVEL === 'alto' ? 2 : 4;
+const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth / BLOOM_DIV, innerHeight / BLOOM_DIV), 0.3, 0.35, 1.0);
+composer.addPass(bloom); bloom.enabled = NIVEL !== 'bajo';
 composer.addPass(new OutputPass());
+// addPass le da al bloom la resolución completa × DPR: se devuelve a la reducida
+bloom.setSize(innerWidth / BLOOM_DIV, innerHeight / BLOOM_DIV);
 
 scene.add(new THREE.HemisphereLight('#9fb4ff', '#0a0a0a', 0.35));
 const key = new THREE.DirectionalLight('#fff6ea', 1.4); key.position.set(2.5, 4, 4); scene.add(key);
@@ -161,12 +166,6 @@ function texAcero() {
   return aceroTex;
 }
 const radialTex = canvasTex(256, 256, (c, W, H) => { const g = c.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, W / 2); g.addColorStop(0, 'rgba(255,255,255,0.9)'); g.addColorStop(0.5, 'rgba(255,255,255,0.15)'); g.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = g; c.fillRect(0, 0, W, H); });
-const ringTex = canvasTex(1024, 1024, (c, W) => {
-  const cx = W / 2; c.strokeStyle = '#fff';
-  [[0.48, 6], [0.44, 1.5], [0.36, 3], [0.3, 1]].forEach(([r, w]) => { c.lineWidth = w; c.beginPath(); c.arc(cx, cx, W * r, 0, Math.PI * 2); c.stroke(); });
-  for (let i = 0; i < 120; i++) { const a = i / 120 * Math.PI * 2, r1 = W * 0.445, r2 = W * (i % 10 ? 0.465 : 0.48); c.lineWidth = i % 10 ? 1.5 : 4; c.beginPath(); c.moveTo(cx + Math.cos(a) * r1, cx + Math.sin(a) * r1); c.lineTo(cx + Math.cos(a) * r2, cx + Math.sin(a) * r2); c.stroke(); }
-  c.lineWidth = 10; [0, 1, 2, 3].forEach(k => { c.beginPath(); c.arc(cx, cx, W * 0.4, k * Math.PI / 2 + 0.2, k * Math.PI / 2 + 0.9); c.stroke(); });
-});
 
 // ================= MATERIALES PPF =================
 const holoMats = new Set();
@@ -254,41 +253,8 @@ function setXray(robot, on) {
 }
 
 // ================= ESCENARIO =================
-const estudio = crearRing(scene, renderer);
+const estudio = crearRing(scene, renderer, NIVEL);
 function backdrop(color, k) { estudio.setAcento(color, Math.min(1, k * 2.5)); gsap.to(particles.material.color, { ...new THREE.Color(color).lerp(new THREE.Color('#ffffff'), 0.35), duration: 1.2 }); }
-// gobo: el logo de cada dueño proyectado en la pared del estudio
-const gobo = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, fog: false }));
-gobo.visible = false;
-const goboTex = {};
-function goboDe(a) {
-  if (goboTex[a.id]) return goboTex[a.id];
-  let t;
-  if (a.id === 'westcol' && a.logo) { t = new THREE.TextureLoader().load(a.logo); t.colorSpace = THREE.SRGBColorSpace; t.userData = { asp: 1 }; }
-  else {
-    t = canvasTex(2048, 1024, (c, w, h) => { c.fillStyle = '#fff'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = `400 ${h * 0.55}px "Pirata One"`; c.fillText(a.id === 'blessd' ? 'Blessd' : a.nombre, w / 2, h / 2); });
-    t.userData = { asp: 2 };
-  }
-  goboTex[a.id] = t; return t;
-}
-function goboShow() { }
-function goboShowViejo(a, color) {
-  const t = goboDe(a); const asp = t.userData.asp || 1; const hgt = asp > 1.5 ? 3.4 : 5.2;
-  gsap.to(gobo.material, { opacity: 0, duration: 0.35, onComplete: () => {
-    gobo.material.map = t; gobo.material.needsUpdate = true; gobo.scale.set(hgt * asp, hgt, 1); gobo.visible = true;
-    gobo.material.color.set(color).lerp(new THREE.Color('#ffffff'), 0.25);
-    gsap.to(gobo.material, { opacity: 0.055, duration: 1.6, ease: 'power2.out' });
-  } });
-}
-function goboHide() { gsap.to(gobo.material, { opacity: 0, duration: 0.6, onComplete: () => { gobo.visible = false; } }); }
-
-function beamMat(color) {
-  return new THREE.ShaderMaterial({
-    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
-    uniforms: { c: { value: new THREE.Color(color) }, k: { value: 0.18 } },
-    vertexShader: `varying float vY; varying vec3 vN; varying vec3 vV; void main(){ vY = position.y; vN = normalize(normalMatrix*normal); vec4 mv = modelViewMatrix*vec4(position,1.0); vV = normalize(-mv.xyz); gl_Position = projectionMatrix*mv; }`,
-    fragmentShader: `uniform vec3 c; uniform float k; varying float vY; varying vec3 vN; varying vec3 vV; void main(){ float h = smoothstep(-2.6, 2.4, vY); float f = pow(abs(dot(vN, vV)), 1.6); gl_FragColor = vec4(c, (1.0-h)*f*k); }`,
-  });
-}
 
 const robots = []; const stands = [];
 const POS = [-0.95, 0.95];
@@ -366,7 +332,7 @@ function conceptoDesdeJSON(j, art) {
 const gltf = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
 const progreso = { glb: 0 };
 async function cargarEntregas() {
-  const glbP = gltf.loadAsync(BASE + 'modelos/fabrica_t800.glb', e => { if (e.total) progreso.glb = e.loaded / e.total; }).then(g => g.scene).catch(e => { console.error('GLB no cargó', e); return null; });
+  const glbP = gltf.loadAsync(BASE + 'modelos/fabrica_t800.glb', e => { if (e.total) progreso.glb = Math.min(1, e.loaded / e.total); }).then(g => g.scene).catch(e => { console.error('GLB no cargó', e); return null; });
   const dm = await getJSON(BASE + 'disenos/manifest.json');
   const d = (f) => `${BASE}disenos/${f}?v=${dm?._v || 0}`;
   await Promise.all(ARTISTAS.map(async art => {
@@ -405,12 +371,12 @@ async function cargarDisenos3D() {
 }
 const ZKEYS = Object.keys(ZONAS).sort((a, b) => b.length - a.length);
 function zonaDe(name) { const n = (name || '').toLowerCase(); return ZKEYS.find(k => n.startsWith(k) || n.includes('_' + k + '_') || n.endsWith('_' + k) || n.includes(k + '_')) || null; }
-// El GLB oficial trae ~270 mallas. Se fusionan por (zona, lado, material, atributos): pasa de ~270 a
-// unas decenas de draw calls por robot y por pasada (escena, reflejo y sombra). La plantilla se arma
-// una vez y los dos robots comparten las geometrías.
+// El GLB oficial trae ~270 mallas con 83 materiales que en realidad son 5 tipos repetidos por pieza. Se unifican los
+// materiales idénticos y se fusiona por (zona, lado, atributos) con grupos por material: con piel puesta cada malla
+// es una sola llamada de dibujo. La plantilla se arma una vez y los dos robots comparten las geometrías.
 function aFloat(geo, mat4) {
   const out = new THREE.BufferGeometry();
-  for (const k of ['position', 'normal', 'uv']) {
+  for (const k of ['position', 'normal', 'uv', 'uv1']) {
     const at = geo.attributes[k]; if (!at) continue;
     const n = at.itemSize, arr = new Float32Array(at.count * n);
     for (let i = 0; i < at.count; i++) { arr[i * n] = at.getX(i); if (n > 1) arr[i * n + 1] = at.getY(i); if (n > 2) arr[i * n + 2] = at.getZ(i); }
@@ -419,32 +385,73 @@ function aFloat(geo, mat4) {
   out.setIndex(geo.index ? Array.from(geo.index.array) : [...Array(geo.attributes.position.count).keys()]);
   out.applyMatrix4(mat4); return out;
 }
-function plantilla(src, mapas = [], pose = null) {
-  let PLANTILLA;
-  const g = src.clone(true);
-  // postura de pelea: se gira cada articulación del esqueleto oficial antes de fusionar (queda horneada en la geometría)
-  if (pose) g.traverse(n => { const p = pose[n.name]; if (!p) return; if (p[0]) n.rotateX(p[0]); if (p[1]) n.rotateY(p[1]); if (p[2]) n.rotateZ(p[2]); });
-  g.updateMatrixWorld(true);
+// Cada eslabón trae su propia textura (16): se juntan en un atlas para que los materiales iguales salvo la textura
+// se vuelvan uno. Las coordenadas del atlas van en uv1, así el carbono y el acero siguen usando las uv originales.
+function atlasDeFabrica(root) {
+  const fuentes = new Map(); let otras = false;
+  root.traverse(m => {
+    if (!m.isMesh) return; const f = Array.isArray(m.material) ? m.material[0] : m.material;
+    if (f.normalMap || f.roughnessMap || f.metalnessMap || f.aoMap || f.emissiveMap || f.alphaMap) otras = true;
+    if (f.map) fuentes.set(f.map.source.uuid, f.map);
+  });
+  if (fuentes.size < 2 || otras) return;
+  const n = Math.ceil(Math.sqrt(fuentes.size)); const S = NIVEL === 'alto' ? Math.min(1024, renderer.capabilities.maxTextureSize / n) : 512;
+  const cv = document.createElement('canvas'); cv.width = cv.height = n * S; const cx = cv.getContext('2d');
+  const celda = new Map(); let i = 0; let ref = null;
+  for (const [id, t] of fuentes) { const c = i % n, r = (i / n) | 0; cx.drawImage(t.image, c * S, r * S, S, S); celda.set(id, [c, r]); i++; ref = t; }
+  const atlas = new THREE.CanvasTexture(cv); atlas.flipY = false; atlas.colorSpace = ref.colorSpace; atlas.channel = 1;
+  atlas.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+  const hechas = new Map(); const pad = 0.5 / S;
+  root.traverse(m => {
+    if (!m.isMesh) return; if (Array.isArray(m.material)) m.material = m.material[0];
+    const f = m.material; if (!f.map || f.map === atlas) return; const cel = celda.get(f.map.source.uuid);
+    const uv = m.geometry.attributes.uv; if (!uv) return;
+    const prev = hechas.get(m.geometry); if (prev && prev !== cel) m.geometry = m.geometry.clone();
+    hechas.set(m.geometry, cel);
+    const a = new Float32Array(uv.count * 2);
+    for (let k = 0; k < uv.count; k++) { a[k * 2] = (cel[0] + pad + uv.getX(k) * (1 - 2 * pad)) / n; a[k * 2 + 1] = (cel[1] + pad + uv.getY(k) * (1 - 2 * pad)) / n; }
+    m.geometry.setAttribute('uv1', new THREE.BufferAttribute(a, 2));
+  });
+  root.traverse(m => { if (m.isMesh && m.material.map && m.material.map !== atlas) { m.material.map = atlas; } });
+  for (const t of fuentes.values()) { t.dispose(); t.image?.close?.(); }
+}
+function unificarMats(root) {
+  atlasDeFabrica(root);
+  const canon = new Map(); const tx = t => t ? [t.source.uuid, t.offset.x, t.offset.y, t.repeat.x, t.repeat.y, t.rotation, t.channel].join(',') : '-';
+  root.traverse(m => {
+    if (!m.isMesh) return; if (Array.isArray(m.material)) m.material = m.material[0];
+    const f = m.material;
+    const k = [f.type, f.color?.getHex(), f.roughness, f.metalness, f.emissive?.getHex(), f.emissiveIntensity, f.opacity, f.transparent, f.side, f.alphaTest, f.vertexColors, f.envMapIntensity, f.normalScale?.x, f.aoMapIntensity,
+      tx(f.map), tx(f.normalMap), tx(f.roughnessMap), tx(f.metalnessMap), tx(f.aoMap), tx(f.emissiveMap), tx(f.alphaMap)].join('|');
+    let c = canon.get(k); if (!c) canon.set(k, c = f); m.material = c;
+  });
+}
+function plantilla(src, mapas = []) {
+  const g = src.clone(true); g.updateMatrixWorld(true);
   const box = new THREE.Box3().setFromObject(g);
   g.position.set(-(box.min.x + box.max.x) / 2, -box.min.y, -(box.min.z + box.max.z) / 2); g.updateMatrixWorld(true);
   const grupos = new Map(); const tmpB = new THREE.Box3(), wc = new THREE.Vector3();
   g.traverse(m => {
     if (!m.isMesh) return;
-    if (Array.isArray(m.material)) m.material = m.material[0];
     tmpB.setFromObject(m).getCenter(wc);
     const z = zonaDe(m.name) || zonaDe(m.parent?.name) || zonaDe(m.name + ' ' + (m.parent?.name || '')) || 'articulacion';
     const side = Math.abs(wc.x) < 0.04 ? 0 : Math.sign(wc.x);
-    const k = [z, side, m.material.uuid, Object.keys(m.geometry.attributes).sort().join(), ...mapas.map(mp => mp.get(m.name)?.uuid || '-')].join('|');
-    let gr = grupos.get(k); if (!gr) grupos.set(k, gr = { zona: z, side, mat: m.material, geos: [], nombres: [] });
-    gr.geos.push(aFloat(m.geometry, m.matrixWorld)); gr.nombres.push(m.name);
+    const k = [z, side, Object.keys(m.geometry.attributes).sort().join(), ...mapas.map(mp => mp.get(m.name)?.uuid || '-')].join('|');
+    let gr = grupos.get(k); if (!gr) grupos.set(k, gr = { zona: z, side, porMat: new Map(), nombres: [] });
+    if (!gr.porMat.has(m.material)) gr.porMat.set(m.material, []);
+    gr.porMat.get(m.material).push(aFloat(m.geometry, m.matrixWorld)); gr.nombres.push(m.name);
   });
-  PLANTILLA = { H: box.max.y - box.min.y, off: g.position.clone(), grupos: [...grupos.values()].map(gr => {
-    const geo = mergeGeometries(gr.geos, false); gr.geos.forEach(x => x.dispose());
+  return { H: box.max.y - box.min.y, off: g.position.clone(), grupos: [...grupos.values()].map(gr => {
+    const mats = [...gr.porMat.keys()], lista = [], idx = [];
+    mats.forEach((mt, mi) => gr.porMat.get(mt).forEach(x => { lista.push(x); idx.push(mi); }));
+    const geo = mergeGeometries(lista, true); lista.forEach(x => x.dispose());
+    // un grupo por material (los de cada pieza original se juntan)
+    const gs = []; geo.groups.forEach((q, j) => { const u = gs[gs.length - 1]; if (u && u.materialIndex === idx[j] && u.start + u.count === q.start) u.count += q.count; else gs.push({ start: q.start, count: q.count, materialIndex: idx[j] }); });
+    geo.clearGroups(); if (mats.length > 1) gs.forEach(q => geo.addGroup(q.start, q.count, q.materialIndex));
     geo.computeBoundingBox(); const c = geo.boundingBox.getCenter(new THREE.Vector3());
     geo.translate(-c.x, -c.y, -c.z); geo.computeBoundingSphere();
-    return { ...gr, geo, c };
+    return { zona: gr.zona, side: gr.side, nombres: gr.nombres, mat: mats.length > 1 ? mats : mats[0], geo, c };
   }) };
-  return PLANTILLA;
 }
 // material de un diseño para una malla fusionada: el más repetido entre sus piezas originales
 function matDe(mats, m) {
@@ -452,10 +459,9 @@ function matDe(mats, m) {
   for (const n of m.userData.nombres || [m.name]) { const x = mats.get(n); if (!x) continue; const c = (cnt.get(x) || 0) + 1; cnt.set(x, c); if (c > bn) { bn = c; best = x; } }
   return best;
 }
-function robotDesdeGLB(art, src) {
-  const mapas = art.conceptos.map(c => c.mats).filter(Boolean);
+function robotDesdeGLB(art, T) {
   const root = new THREE.Group(); root.name = art.id; const body = new THREE.Group(); root.add(body);
-  const T = plantilla(src, mapas, null); const C = V(0, T.H * 0.58, 0); const parts = [];
+  const C = V(0, T.H * 0.58, 0); const parts = [];
   for (const gr of T.grupos) {
     const m = new THREE.Mesh(gr.geo, gr.mat); m.name = gr.nombres[0]; m.position.copy(gr.c); body.add(m);
     const zona = gr.zona; const libre = !!ZONAS[zona]?.libre; const wc = gr.c;
@@ -473,17 +479,44 @@ function robotDesdeGLB(art, src) {
 // ===== ACTORES DE LA INTRO =====
 // Para caminar y ponerse en guardia hace falta el esqueleto: durante la intro se usa una copia articulada del
 // modelo oficial (con la piel en colores); al terminar se cambia por los robots fusionados, de pie normal.
+// La copia se prepara en tiempo ocioso tras la portada, con las piezas de cada eslabón rígido fusionadas
+// (mismo padre, material y zona: se mueven juntas), y se libera de la memoria al terminar la intro.
 let SRC = null;
+function baseActor(src) {
+  const g = src.clone(true); const padres = new Map();
+  g.traverse(o => {
+    if (!o.isMesh || o.children.length) return;
+    const z = zonaDe(o.name) || zonaDe(o.parent?.name) || 'articulacion';
+    const k = [o.material.uuid, z, Object.keys(o.geometry.attributes).sort().join()].join('|');
+    let P = padres.get(o.parent); if (!P) padres.set(o.parent, P = new Map());
+    let L = P.get(k); if (!L) P.set(k, L = []); L.push(o);
+  });
+  for (const [par, P] of padres) for (const L of P.values()) {
+    if (L.length < 2) continue;
+    const geo = mergeGeometries(L.map(o => { o.updateMatrix(); return aFloat(o.geometry, o.matrix); }), false);
+    const m = new THREE.Mesh(geo, L[0].material); m.name = L[0].name; par.add(m); L.forEach(o => par.remove(o));
+  }
+  return g;
+}
+function prepararActores() {
+  if (actores.length || !SRC) return;
+  const B = baseActor(SRC); ARTISTAS.forEach((art, i) => crearActor(art, i, B));
+}
+function soltarActores() {
+  const geos = new Set();
+  for (const a of actores) { scene.remove(a.root); a.root.traverse(o => { if (o.isMesh) geos.add(o.geometry); }); a.cache?.forEach(m => { holoMats.delete(m); m.dispose(); }); }
+  geos.forEach(g => g.dispose()); actores.length = 0; SRC = null;
+}
 const actores = [];
 const _e = new THREE.Euler(), _q = new THREE.Quaternion(), _p = new THREE.Vector3();
-function crearActor(art, i) {
-  const root = new THREE.Group(); const g = SRC.clone(true); root.add(g); g.updateMatrixWorld(true);
+function crearActor(art, i, B) {
+  const root = new THREE.Group(); const g = B.clone(true); root.add(g); g.updateMatrixWorld(true);
   const box = new THREE.Box3().setFromObject(g);
   g.position.set(-(box.min.x + box.max.x) / 2, -box.min.y, -(box.min.z + box.max.z) / 2);
   const joints = {}; const mallas = [];
   g.traverse(o => {
     if (/^J_/.test(o.name)) { joints[o.name] = o; o.userData.q0 = o.quaternion.clone(); }
-    if (o.isMesh) { if (Array.isArray(o.material)) o.material = o.material[0]; o.castShadow = true; mallas.push(o); o.userData.factoryMat = o.material; o.userData.zona = zonaDe(o.name) || zonaDe(o.parent?.name) || 'articulacion'; }
+    if (o.isMesh) { o.castShadow = true; mallas.push(o); o.userData.factoryMat = o.material; o.userData.zona = zonaDe(o.name) || zonaDe(o.parent?.name) || 'articulacion'; }
   });
   root.updateMatrixWorld(true);
   const pieY0 = Math.min(joints.J_LINK_FOOT_L.getWorldPosition(_p).y, joints.J_LINK_FOOT_R.getWorldPosition(_p).y);
@@ -588,27 +621,50 @@ function aplicarDecals(robot, piel, modo) {
 }
 
 // ================= ESTADO =================
-const S = { mode: 'boot', idx: 0, ch: -1, concept: ARTISTAS.map(() => 0), explode: 0, auto: true, mx: 0, my: 0, modoT: 0 };
+const S = { mode: 'boot', idx: 0, ch: -1, concept: ARTISTAS.map(() => 0), explode: 0, auto: true, mx: 0, my: 0, modoT: 0, firma: -1 };
 
 async function construir() {
   const [src, disenos] = await Promise.all([cargarEntregas(), cargarDisenos3D()]);
   for (const d of disenos) { if (!d) continue; const c = ARTISTAS.find(x => x.id === d.id)?.conceptos[d.ci]; if (c) { c.mats = d.mats; c.calcos = d.calcos; } }
   if (!src) throw new Error('No se pudo cargar el modelo oficial del T800 Max');
+  unificarMats(src); SRC = src;
+  const T = plantilla(src, ARTISTAS.flatMap(a => a.conceptos.map(c => c.mats)).filter(Boolean));
   ARTISTAS.forEach((art, i) => {
-    SRC = src; const r = robotDesdeGLB(art, src); crearActor(art, i);
+    const r = robotDesdeGLB(art, T);
     r.position.set(POS[i], 0, 0); r.rotation.y = CARA[i]; scene.add(r); robots.push(r);
-    const st = new THREE.Group();
-    const ring = new THREE.Mesh(new THREE.CircleGeometry(0.75, 64), new THREE.MeshBasicMaterial({ map: ringTex, color: new THREE.Color(art.acento).multiplyScalar(1.6), transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
-    ring.rotation.x = -Math.PI / 2; ring.position.y = 0.004; ring.visible = false;
-    const glow = new THREE.Mesh(new THREE.CircleGeometry(1.1, 48), new THREE.MeshBasicMaterial({ map: radialTex, color: '#fff3dc', transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false }));
-    glow.rotation.x = -Math.PI / 2; glow.position.y = 0.003;
-    const beam = new THREE.Mesh(new THREE.ConeGeometry(0.95, 5, 48, 1, true), beamMat(art.acento)); beam.position.y = 2.5; beam.rotation.x = Math.PI; beam.visible = false;
-    const spot = new THREE.SpotLight(art.acento, 9, 9, 0.42, 0.7, 1.2); spot.position.set(0, 4.6, 1.4); spot.target = r;
-    st.add(ring, glow, beam, spot); st.position.x = POS[i]; scene.add(st);
-    stands.push({ g: st, ring, glow, beam, spot });
+    stands[i].spot.color.set(art.acento); stands[i].spot.target = r;
     vestir(r, art.recomendado);
     S.concept[i] = art.recomendado;
   });
+}
+// Los focos de cada esquina existen desde el principio: así las luces de la escena ya son las definitivas y los
+// shaders del ring y del robot se compilan mientras baja el modelo (antes se recompilaban al llegar los focos).
+ARTISTAS.forEach((art, i) => {
+  const st = new THREE.Group();
+  const glow = new THREE.Mesh(new THREE.CircleGeometry(1.1, 48), new THREE.MeshBasicMaterial({ map: radialTex, color: '#fff3dc', transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false }));
+  glow.rotation.x = -Math.PI / 2; glow.position.y = 0.003;
+  const spot = new THREE.SpotLight(art.acento, 9, 9, 0.42, 0.7, 1.2); spot.position.set(0, 4.6, 1.4); spot.target.position.set(0, 1, 0); st.add(spot.target);
+  st.add(glow, spot); st.position.x = POS[i]; scene.add(st);
+  stands.push({ g: st, glow, spot });
+});
+// compila en paralelo las variantes que de verdad se usan: la escena se dibuja en el render target del composer
+// (sin tone mapping y en lineal), no en el lienzo; compilar contra el lienzo daba variantes que nunca se usaban
+function compilar(obj, destino = null) {
+  const prev = renderer.getRenderTarget(); renderer.setRenderTarget(composer.renderTarget1);
+  const p = renderer.compileAsync(obj, camera, destino); renderer.setRenderTarget(prev); return p;
+}
+// compila (y dibuja una vez, tapado por la portada) los shaders del ring y del robot de fábrica mientras baja el modelo:
+// en ANGLE la compilación termina al primer uso, por eso se dibujan también unos triángulos degenerados de muestra
+async function precompilarCarga() {
+  const geo = new THREE.BufferGeometry(); const z3 = new Float32Array(9), z2 = new Float32Array(6);
+  geo.setAttribute('position', new THREE.BufferAttribute(z3, 3)); geo.setAttribute('normal', new THREE.BufferAttribute(z3.slice(), 3));
+  geo.setAttribute('uv', new THREE.BufferAttribute(z2, 2)); geo.setAttribute('uv1', new THREE.BufferAttribute(z2.slice(), 2));
+  const tx = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1); tx.colorSpace = THREE.SRGBColorSpace; tx.flipY = false; tx.channel = 1; tx.needsUpdate = true;
+  const g = new THREE.Group(); [new THREE.MeshStandardMaterial({ map: tx }), new THREE.MeshStandardMaterial()].forEach(m => { const x = new THREE.Mesh(geo, m); x.castShadow = true; x.frustumCulled = false; g.add(x); });
+  scene.add(g); camera.lookAt(look);
+  try { await compilar(scene); } catch { }
+  if (!listo3D) { renderer.shadowMap.needsUpdate = true; composer.render(); }
+  scene.remove(g); geo.dispose(); tx.dispose();
 }
 
 // ================= CÁMARA =================
@@ -642,7 +698,7 @@ function setMode(mode) {
   S.explode = 0; robots.forEach(r => setExplode(r, 0)); syncDock(); $('#xray-legend').classList.remove('show');
   if (mode === 'select') {
     robots.forEach((r, i) => { r.visible = true; gsap.to(r.position, { x: POS[i], y: 0, z: 0, duration: 1.4, ease: 'power3.inOut' }); gsap.to(r.rotation, { y: CARA[i], duration: 1.4 }); gsap.to(stands[i].g.position, { x: POS[i], z: 0, duration: 1.4, ease: 'power3.inOut' }); });
-    camSelect(); setAcc('#a9bbff'); backdrop('#a9bbff', 0.22); highlight(S.idx); sfx.musica('musica'); goboHide();
+    camSelect(); setAcc('#a9bbff'); backdrop('#a9bbff', 0.22); highlight(S.idx); sfx.musica('musica');
     robots.forEach((r, i) => { if (r.userData.modo !== S.concept[i]) setTimeout(() => vestir(r, S.concept[i], true), 300 + i * 250); });
   }
   if (mode === 'garage') {
@@ -652,15 +708,15 @@ function setMode(mode) {
       else { gsap.to(r.position, { y: -2.6, duration: 1.0, ease: 'power3.in', onComplete: () => { if (S.mode === 'garage' && S.idx !== i) r.visible = false; } }); gsap.to(stands[i].g.position, { x: (i < S.idx ? -1 : 1) * 7, duration: 1.2 }); }
     });
     stands.forEach((s, i) => gsap.to(s.spot, { intensity: i === S.idx ? 5 : 0, duration: 1 }));
-    camGarage(); fillGarage(); cancion(ARTISTAS[S.idx].id); goboShow(ARTISTAS[S.idx], acentoActual());
+    camGarage(); fillGarage(); cancion(ARTISTAS[S.idx].id);
     setTimeout(() => { if (S.mode === 'garage' && !tourTL) { controls.target.copy(look); controls.autoRotate = S.auto; } }, 1950);
     const sel = robots[S.idx]; setTimeout(() => vestir(sel, S.concept[S.idx], true), 700);
   }
   if (mode === 'cierre') {
-    goboHide(); sfx.musica('musica'); sfx.boom();
+    sfx.musica('musica'); sfx.boom();
     mostrarCierre($('#cierre'), { acentos: ESQUINA.map(e => e.color), nombres: ARTISTAS.map(x => x.nombre), sub: 'STREAM FIGHTERS 5 · 14 NOV · BOGOTÁ' });
   }
-  if (mode === 'piel') { goboHide(); camTo(V(0, 2.2, 10), V(0, 1.1, 0), 2.2); backdrop('#a9bbff', 0.2); openPiel(); sfx.musica('musica'); }
+  if (mode === 'piel') { camTo(V(0, 2.2, 10), V(0, 1.1, 0), 2.2); backdrop('#a9bbff', 0.2); openPiel(); sfx.musica('musica'); }
 }
 function highlight(i) {
   stands.forEach((s, k) => { gsap.to(s.glow.material, { opacity: k === i ? 0.4 : 0.08, duration: 0.6 }); gsap.to(s.spot, { intensity: k === i ? 6 : 2, duration: 0.6 }); });
@@ -705,7 +761,7 @@ function ajustarTitulo(el) {
 }
 function pickConcept(j) {
   const a = ARTISTAS[S.idx]; if (!a.conceptos[j] || (S.concept[S.idx] === j && robots[S.idx].userData.modo === j)) return;
-  S.concept[S.idx] = j; sfx.select(); fillGarage(); vestir(robots[S.idx], j, true); goboShow(a, acentoActual()); if ($('#info').classList.contains('ficha')) { hideInfo(); ficha(); }
+  S.concept[S.idx] = j; sfx.select(); fillGarage(); vestir(robots[S.idx], j, true); if ($('#info').classList.contains('ficha')) { hideInfo(); ficha(); }
 }
 
 // recorrido de cámara por el robot
@@ -874,10 +930,18 @@ function buildTags() {
     d.onclick = () => goCh(1 + i);
     box.appendChild(d); tagEls.push(d);
   });
+  // los tamaños se leen solo cuando cambian (leer offsetWidth en cada frame forzaba un reflow por frame)
+  const ro = new ResizeObserver(() => tagEls.forEach((t, i) => { tagSz[i] = t.offsetWidth; if (!tagH) tagH = t.offsetHeight; }));
+  tagEls.forEach(t => ro.observe(t));
 }
+const tagSz = [], tagTr = [];
 function updateTags() {
   if (S.mode !== 'select') return;
-  robots.forEach((r, i) => { tmpV.set(r.position.x, -0.02, 0.35).project(camera); const x = (tmpV.x * 0.5 + 0.5) * innerWidth, y = Math.min((-tmpV.y * 0.5 + 0.5) * innerHeight, innerHeight - (tagH ||= tagEls[i].offsetHeight || 150) - 84); const mx = Math.max(60, (tagEls[i].offsetWidth || 120) / 2 + 16); tagEls[i].style.transform = `translate(${Math.min(innerWidth - mx, Math.max(mx, x)) | 0}px, ${y | 0}px)`; });
+  robots.forEach((r, i) => {
+    tmpV.set(r.position.x, -0.02, 0.35).project(camera);
+    const x = (tmpV.x * 0.5 + 0.5) * innerWidth, y = Math.min((-tmpV.y * 0.5 + 0.5) * innerHeight, innerHeight - (tagH || 150) - 84); const mx = Math.max(60, (tagSz[i] || 120) / 2 + 16);
+    const tr = `translate(${Math.min(innerWidth - mx, Math.max(mx, x)) | 0}px, ${y | 0}px)`; if (tagTr[i] !== tr) { tagTr[i] = tr; tagEls[i].style.transform = tr; }
+  });
 }
 
 // ================= CONTROLES =================
@@ -907,8 +971,6 @@ function wireUI() {
   $$('#chapters a').forEach(a => a.onclick = e => { e.preventDefault(); goCh(+a.dataset.i); });
   $('#jump').innerHTML = ARTISTAS.map(a => `<button style="--c:${a.conceptos[0]?.acento || a.acento}">${a.nombre} →</button>`).join('');
   $$('#jump button').forEach((b, i) => b.onclick = () => goCh(1 + i));
-  const tk = ['STREAM FIGHTERS 5', 'WESTCOL VS BLESSD', 'PELEA DE ROBOTS', '14 NOV 2026 · COLISEO MEDPLUS · BOGOTÁ', 'SEGUNDA PIEL', ...ARTISTAS.map(a => `${a.nombre} — ${a.conceptos[0]?.nombre || 'EN DISEÑO'}`), MODELO.nombre, 'PELÍCULA DE PROTECCIÓN, PANEL POR PANEL', 'NUNCA SE TAPA UN SENSOR', 'DISEÑO SOBRE EL MODELO OFICIAL'].join('  ·  ') + '  ·  ';
-  $('#ticker-in').textContent = tk + tk + tk;
 
   let down = null, pend = null;
   canvas.addEventListener('pointermove', ev => {
@@ -1007,7 +1069,8 @@ async function boot() {
     bar.style.transform = `scaleX(${p / 100})`; pct.textContent = String(Math.floor(p)).padStart(3, '0');
     if (li < BOOT_LINES.length - 1 && p > li * 30) { const d = document.createElement('div'); d.textContent = BOOT_LINES[li++]; log.appendChild(d); }
   }, 110);
-  try { await fontsP; await construir(); }
+  // el modelo empieza a bajar ya (sin esperar las fuentes) y los shaders se compilan mientras tanto
+  try { const pc = construir(); precompilarCarga(); await fontsP; await pc; }
   catch (e) { clearInterval(tick); log.innerHTML = '<div class="err">No se pudo cargar el modelo 3D. Revisa tu conexión y recarga la página.</div>'; console.error(e); return; }
   buildLabels(); buildTags(); wireUI();
   $('#lightbox .lb-x').onclick = cerrarLB; $('#lightbox .lb-p').onclick = () => moverLB(-1); $('#lightbox .lb-n').onclick = () => moverLB(1); $('#lightbox').addEventListener('click', e => { if (e.target.id === 'lightbox') cerrarLB(); });
@@ -1018,11 +1081,29 @@ async function boot() {
   key.intensity = 0.06; rim1.intensity = 0.8; scene.environmentIntensity = 0.16; backdrop('#a9bbff', 0.14);
   robots.forEach(r => vestir(r, 'fabrica')); stands.forEach(s => { s.spot.intensity = 0.7; });
   camera.position.set(0, 1.15, 9); look.set(0, 1.0, 0);
+  // los shaders se compilan en paralelo (sin congelar la página) antes del primer cuadro de la portada
+  camera.lookAt(look); scene.updateMatrixWorld(true);
+  try { await compilar(scene); } catch (e) { console.warn(e); }
+  listo3D = true;
   gsap.to(camera.position, { z: 6.2, y: 0.75, duration: 26, ease: 'sine.inOut' });
   gsap.to('#boot', { '--bgA': 0.0, duration: 2.4, ease: 'power2.inOut' });
   $('#boot').classList.add('ready');
-  gsap.fromTo(['#press', '.press-sub'], { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 1.2, stagger: 0.15, delay: 0.9, ease: 'expo.out' });
+  gsap.fromTo(['#press'], { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 1.2, stagger: 0.15, delay: 0.9, ease: 'expo.out' });
   $('#press').disabled = false; $('#press').onclick = start; $('#press').focus({ preventScroll: true });
+  idle(prepararActores); idle(precalentar);
+}
+// compila en segundo plano los shaders de todos los acabados (e impresos) para que la intro y el cambio de
+// piel no se traben compilando a mitad de animación
+async function precalentar() {
+  const ps = robots[0]?.userData.parts || []; const geos = [ps.find(m => m.geometry.attributes.uv1), ps.find(m => !m.geometry.attributes.uv1)].filter(Boolean).map(m => m.geometry);
+  const g = new THREE.Group(); const mats = new Set();
+  robots.forEach(r => r.userData.matCache?.forEach(m => mats.add(m)));
+  for (const f of Object.keys(FN)) if (f !== 'factory') { const m = mat('#888888', f); holoMats.delete(m); mats.add(m); }
+  const imp = { map: radialTex, transparent: true, roughness: 0.2, clearcoat: 1, clearcoatRoughness: 0.05, polygonOffset: true, polygonOffsetFactor: -4, depthWrite: false };
+  mats.add(new THREE.MeshPhysicalMaterial(imp)); mats.add(new THREE.MeshPhysicalMaterial({ ...imp, emissiveMap: radialTex, emissive: '#ffffff' }));
+  mats.add(XRAY_ON); mats.add(XRAY_LIBRE);
+  for (const geo of geos) for (const m of mats) { const x = new THREE.Mesh(geo, m); x.castShadow = true; g.add(x); }
+  try { await compilar(g, scene); } catch (e) { console.warn(e); }
 }
 let started = false, introTL = null, introT = [], LUZ0 = null;
 function start() {
@@ -1035,6 +1116,7 @@ const SALIDA = [V(-2.25, 0, -2.1), V(2.25, 0, -2.1)];
 const ENCUENTRO = [V(-0.6, 0, 0.2), V(0.6, 0, 0.2)];
 const MIRA = [Math.PI / 2, -Math.PI / 2]; // de perfil, mirándose
 function intro() {
+  prepararActores();
   S.mode = 'intro'; document.body.dataset.mode = 'intro';
   robots.forEach(r => { r.visible = false; });
   actores.forEach((a, i) => { a.root.visible = true; a.root.position.copy(SALIDA[i]); a.root.rotation.y = Math.atan2(-SALIDA[i].x, -SALIDA[i].z); a.guardia = 0; a.paso = 0; vestirActor(a, 'fabrica'); stands[i].g.position.set(SALIDA[i].x, 0, SALIDA[i].z); });
@@ -1094,6 +1176,7 @@ function finIntro(k0, r0, h0) {
   actores.forEach((a, i) => { const r = robots[i]; r.position.copy(a.root.position); r.rotation.y = a.root.rotation.y; r.visible = true; a.root.visible = false; vestir(r, S.concept[i]); });
   key.intensity = k0; rim1.intensity = r0; scene.environmentIntensity = h0;
   gsap.to('.io-bars i', { scaleY: 0, duration: 1, ease: 'expo.inOut' }); gsap.to('.io-c', { opacity: 0, duration: 0.3 });
+  soltarActores();
   goCh(0, true);
   gsap.to(['#top', '#bottom'], { opacity: 1, duration: 1.2, delay: 0.3 });
   gsap.fromTo('.sel-head > *', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 1.2, stagger: 0.12, ease: 'expo.out', delay: 0.4 });
@@ -1114,17 +1197,20 @@ function calidad(now) {
   if (Q.n < 60) return;
   const avg = Q.acc / Q.n; Q.n = Q.acc = 0;
   let nd = dpr;
+  // si ya está en la resolución mínima y aún no llega a ~38 fps, se apaga el bloom (lo más caro después de los píxeles)
+  if (avg > 26 && dpr <= 0.7 && bloom.enabled) { bloom.enabled = false; return; }
   if (avg > 22 && dpr > 0.7) nd = Math.max(0.7, dpr - 0.15);
   else if (avg < 17.5 && dpr < DPR_MAX) nd = Math.min(DPR_MAX, dpr + 0.1);
   if (nd !== dpr) { dpr = nd; renderer.setPixelRatio(dpr); composer.setPixelRatio(dpr); resize(); }
 }
-const clock = new THREE.Clock(); let frameN = 0;
+const clock = new THREE.Clock(); let frameN = 0, listo3D = false;
 renderer.shadowMap.autoUpdate = false;
 function loop(now) {
   requestAnimationFrame(loop);
-  if (tapado()) { Q.last = 0; return; }
+  // hasta tener el modelo y los shaders listos la portada tapa el lienzo: no se dibuja ni se compila nada a medias
+  if (!listo3D || tapado()) { Q.last = 0; return; }
   const t = clock.getElapsedTime();
-  for (const m of holoMats) { m.iridescenceThicknessRange = [180 + Math.sin(t * 0.9) * 120, 900 + Math.cos(t * 0.6) * 380]; }
+  if (holoMats.size) { const a = 180 + Math.sin(t * 0.9) * 120, b = 900 + Math.cos(t * 0.6) * 380; for (const m of holoMats) { m.iridescenceThicknessRange[0] = a; m.iridescenceThicknessRange[1] = b; } }
   robots.forEach((r, i) => {
     if (!r.visible) return;
     const u = r.userData; const e = u.explode;
@@ -1149,8 +1235,17 @@ function loop(now) {
     else controls.update();
   } else camera.lookAt(look.x + S.mx * 0.3, look.y - S.my * 0.12, look.z);
   updateLabels(); updateTags();
-  // la sombra de contacto apenas cambia: se recalcula cada 2 frames (cada frame durante el despiece)
-  renderer.shadowMap.needsUpdate = (++frameN & 1) === 0 || robots.some(r => r.visible && r.userData.explode > 0.001 && r.userData.explode < 0.999);
+  // la sombra solo se recalcula si algo que la proyecta se movió (en la intro y con el despiece, cada 2 frames)
+  if (renderer.shadowMap.enabled) {
+    let firma = 0, mueve = S.mode === 'intro';
+    robots.forEach((r, i) => {
+      if (!r.visible) return; const u = r.userData; if (u.explode > 0.001) mueve = true;
+      firma += (i + 1) * 17 + r.position.x * 1.3 + r.position.y * 2.1 + r.position.z * 3.7 + r.rotation.y * 5.3 + u.body.rotation.y * 7.1 + u.body.rotation.z * 11 + Math.round(u.body.position.y * 250) * 0.052;
+    });
+    ++frameN;
+    renderer.shadowMap.needsUpdate = mueve ? (frameN & 1) === 0 : Math.abs(firma - S.firma) > 1e-4;
+    if (renderer.shadowMap.needsUpdate) S.firma = firma;
+  }
   composer.render();
   if (S.mode !== 'boot') calidad(now);
 }
@@ -1158,7 +1253,7 @@ addEventListener('pointermove', e => { S.mx = e.clientX / innerWidth - 0.5; S.my
 
 function resize() {
   camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix();
-  renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); bloom.setSize(innerWidth / 2, innerHeight / 2); estudio.resize(innerWidth, innerHeight);
+  renderer.setSize(innerWidth, innerHeight); composer.setSize(innerWidth, innerHeight); bloom.setSize(innerWidth / BLOOM_DIV, innerHeight / BLOOM_DIV); estudio.resize(innerWidth, innerHeight);
 }
 let rzT = 0; addEventListener('resize', () => { clearTimeout(rzT); rzT = setTimeout(resize, 120); });
 
@@ -1171,4 +1266,4 @@ if (matchMedia('(pointer:fine)').matches && !REDUCIDO) {
   document.documentElement.classList.add('cur');
 }
 boot(); requestAnimationFrame(loop);
-if (import.meta.env.DEV) window.__sp = { renderer, scene, robots, S, camera, controls, look, get dpr() { return dpr; } };
+if (import.meta.env.DEV) window.__sp = { renderer, scene, robots, S, camera, controls, look, bloom, composer, NIVEL, get dpr() { return dpr; } };

@@ -3,6 +3,25 @@
 // y esquina azul (Blessd), faldón con LED, torre de luces con haces, pantallas al fondo y público en penumbra.
 // Misma interfaz que el estudio anterior: setAcento(color, k), update(t), resize(w, h), sombras(obj).
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+
+// funde geometrías ya colocadas (cada una con su matriz) en una sola: una llamada de dibujo en vez de muchas
+function fundir(piezas) {
+  const geos = piezas.map(([geo, m]) => {
+    const g = geo.index ? geo.toNonIndexed() : geo.clone(); g.applyMatrix4(m);
+    for (const k of Object.keys(g.attributes)) if (!['position', 'normal', 'color', 'hy'].includes(k)) g.deleteAttribute(k);
+    return g;
+  });
+  const out = mergeGeometries(geos, false); geos.forEach(g => g.dispose()); piezas.forEach(([geo]) => geo.dispose()); return out;
+}
+const _o = new THREE.Object3D();
+const matriz = (fn) => { _o.position.set(0, 0, 0); _o.rotation.set(0, 0, 0); _o.scale.set(1, 1, 1); fn(_o); _o.updateMatrix(); return _o.matrix.clone(); };
+// color (y un valor extra en 'hy') por vértice, para fundir piezas de distinto color en una malla
+function pinta(geo, hex, extra = 0) {
+  const c = new THREE.Color(hex), n = geo.attributes.position.count, a = new Float32Array(n * 3), e = new Float32Array(n).fill(extra);
+  for (let i = 0; i < n; i++) { a[i * 3] = c.r; a[i * 3 + 1] = c.g; a[i * 3 + 2] = c.b; }
+  geo.setAttribute('color', new THREE.BufferAttribute(a, 3)); geo.setAttribute('hy', new THREE.BufferAttribute(e, 1)); return geo;
+}
 
 export const SF = {
   bg: '#05060d', surface: '#0b0d1a', surface2: '#111427', surface3: '#181c35',
@@ -31,12 +50,14 @@ function entorno(renderer) {
   return rt.texture;
 }
 
-function texLona() {
-  return canvasTex(2048, 2048, (c, W) => {
+function texLona(R) {
+  return canvasTex(R, R, (c, W) => {
     const C = W / 2;
     c.fillStyle = SF.surface2; c.fillRect(0, 0, W, W);
-    // grano de la lona
-    const id = c.getImageData(0, 0, W, W); for (let i = 0; i < id.data.length; i += 4) { const v = (Math.random() - 0.5) * 7; id.data[i] += v; id.data[i + 1] += v; id.data[i + 2] += v; } c.putImageData(id, 0, 0);
+    // grano de la lona: un mosaico de 128 px repetido (recorrer los 4 millones de píxeles costaba cientos de ms en celular)
+    const tc = document.createElement('canvas'); tc.width = tc.height = 128; const tx = tc.getContext('2d'); const id = tx.createImageData(128, 128);
+    for (let i = 0; i < id.data.length; i += 4) { const v = Math.random() < 0.5 ? 255 : 0; id.data[i] = id.data[i + 1] = id.data[i + 2] = v; id.data[i + 3] = Math.random() * 8; }
+    tx.putImageData(id, 0, 0); c.fillStyle = c.createPattern(tc, 'repeat'); c.fillRect(0, 0, W, W);
     // borde interior y triángulos de esquina (roja: Westcol, azul: Blessd)
     const m = W * 0.035; c.strokeStyle = 'rgba(244,245,251,.18)'; c.lineWidth = W * 0.004; c.strokeRect(m, m, W - 2 * m, W - 2 * m);
     const tri = (x, y, sx, sy, col) => { c.fillStyle = col; c.beginPath(); c.moveTo(x, y); c.lineTo(x + sx * W * 0.13, y); c.lineTo(x, y + sy * W * 0.13); c.closePath(); c.fill(); };
@@ -63,8 +84,9 @@ function texPantalla(texto, col) {
   });
 }
 
-export function crearRing(scene, renderer) {
-  const MOVIL = matchMedia('(pointer:coarse)').matches || Math.min(innerWidth, innerHeight) < 700;
+// nivel: 'alto' (escritorio), 'medio' (celular), 'bajo' (celular modesto: sin haces y menos público)
+export function crearRing(scene, renderer, nivel = 'alto') {
+  const MOVIL = nivel !== 'alto'; const RL = MOVIL ? 1024 : 2048;
   const grupo = new THREE.Group(); grupo.name = 'ring'; scene.add(grupo);
   const env = entorno(renderer);
   scene.environment = env; scene.environmentIntensity = 0.75;
@@ -73,13 +95,14 @@ export function crearRing(scene, renderer) {
 
   const M = RING.mitad, A = RING.alto, L = M + 0.6; // L: borde exterior de la lona (con delantal)
   // plataforma y lona
-  const lona = new THREE.Mesh(new THREE.PlaneGeometry(L * 2, L * 2), new THREE.MeshStandardMaterial({ map: texLona(), roughness: 0.85, metalness: 0, envMapIntensity: 0.4 }));
-  // los textos del ring usan Bebas Neue: se redibujan en cuanto la fuente está lista
-  let intentos = 0; const redibujar = () => { lona.material.map.dispose(); lona.material.map = texLona(); lona.material.needsUpdate = true; pantallas.forEach((p, i) => { if (p.userData.cartel) return; p.material.map.dispose(); p.material.map = texPantalla(...PANT[i].slice(1)); p.material.needsUpdate = true; }); };
+  const lona = new THREE.Mesh(new THREE.PlaneGeometry(L * 2, L * 2), new THREE.MeshStandardMaterial({ map: texLona(RL), roughness: 0.85, metalness: 0, envMapIntensity: 0.4 }));
+  // los textos del ring usan Chakra Petch: se redibujan en cuanto la fuente está lista
+  let intentos = 0; const redibujar = () => { lona.material.map.dispose(); lona.material.map = texLona(RL); lona.material.needsUpdate = true; pantallas.forEach((p, i) => { if (p.userData.cartel) return; p.material.map.dispose(); p.material.map = texPantalla(...PANT[i].slice(1)); p.material.needsUpdate = true; }); };
   const esperaFuente = () => { if (document.fonts.check('italic 700 100px "Chakra Petch"')) return redibujar(); if (++intentos > 40) return; document.fonts.load('italic 700 100px "Chakra Petch"').finally(() => setTimeout(esperaFuente, 150)); };
   setTimeout(esperaFuente, 0);
   lona.rotation.x = -Math.PI / 2; lona.receiveShadow = true; grupo.add(lona);
-  const faldon = new THREE.Mesh(new THREE.BoxGeometry(L * 2, A, L * 2), [0, 1, 2, 3, 4, 5].map(i => new THREE.MeshStandardMaterial({ color: i === 2 || i === 3 ? '#000' : SF.surface, roughness: 0.6, metalness: 0.2 })));
+  // un solo material (antes 6 llamadas): la cara de arriba la tapa la lona y la de abajo nunca se ve
+  const faldon = new THREE.Mesh(new THREE.BoxGeometry(L * 2, A, L * 2), new THREE.MeshStandardMaterial({ color: SF.surface, roughness: 0.6, metalness: 0.2 }));
   faldon.position.y = -A / 2 - 0.005; grupo.add(faldon);
   // franja LED del faldón (toma el color de acento)
   const ledMat = new THREE.MeshBasicMaterial({ color: SF.brand, toneMapped: false });
@@ -89,45 +112,57 @@ export function crearRing(scene, renderer) {
   piso.rotation.x = -Math.PI / 2; piso.position.y = -A; piso.receiveShadow = true; grupo.add(piso);
 
   // postes y almohadillas de esquina
-  const negro = new THREE.MeshStandardMaterial({ color: '#15171f', roughness: 0.35, metalness: 0.8 });
+  // poste + almohadilla en una sola malla por esquina (antes 2), con color por vértice. Postes y cuerdas comparten
+  // material (un solo shader que compilar): 'hy' ≥ 0 es el metal de la pieza; 'hy' < 0, el brillo propio de la cuerda
+  const posteMat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.42, metalness: 1 });
+  posteMat.onBeforeCompile = sh => {
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float hy; varying float vHy;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvHy = hy;');
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vHy;').replace('#include <metalnessmap_fragment>', 'float metalnessFactor = metalness * max(vHy, 0.0);')
+      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += vColor.rgb * 0.12 * max(-vHy, 0.0);');
+  };
+  const cuerdaMat = posteMat;
   const esquinas = [[-M, -M, SF.red], [M, -M, SF.brand], [-M, M, SF.ink], [M, M, SF.ink]];
   const postes = [];
   for (const [x, z, col] of esquinas) {
-    const gp = new THREE.Group(); gp.userData.xz = [x, z]; grupo.add(gp); postes.push(gp);
-    const poste = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.75, 16), negro); poste.position.set(x, 0.875, z); gp.add(poste);
-    const pad = new THREE.Mesh(new THREE.BoxGeometry(0.2, 1.25, 0.2), new THREE.MeshStandardMaterial({ color: col, roughness: 0.5 }));
-    pad.position.set(x - Math.sign(x) * 0.07, 0.95, z - Math.sign(z) * 0.07); pad.rotation.y = Math.PI / 4; gp.add(pad);
+    const geo = fundir([
+      [pinta(new THREE.CylinderGeometry(0.05, 0.05, 1.75, 16), '#15171f', 0.8), matriz(o => o.position.set(x, 0.875, z))],
+      [pinta(new THREE.BoxGeometry(0.2, 1.25, 0.2), col, 0), matriz(o => { o.position.set(x - Math.sign(x) * 0.07, 0.95, z - Math.sign(z) * 0.07); o.rotation.y = Math.PI / 4; })],
+    ]);
+    const gp = new THREE.Mesh(geo, posteMat); gp.userData.xz = [x, z]; grupo.add(gp); postes.push(gp);
   }
-  // cuerdas en tres lados (el frente se omite para no tapar la cámara)
+  // cuerdas en tres lados (el frente se omite para no tapar la cámara): las cuatro de cada lado en una malla (antes 12 llamadas)
   const COL_CUERDAS = [SF.red, SF.ink, SF.brand, SF.brand2];
   const ALTOS = [1.5, 1.12, 0.74, 0.36];
   const lados = [[[-M, -M], [M, -M]], [[-M, -M], [-M, M]], [[M, -M], [M, M]]];
-  const cuerdas = lados.map((_, i) => { const g = new THREE.Group(); g.userData.lado = ['fondo', 'izq', 'der'][i]; grupo.add(g); return g; });
-  ALTOS.forEach((y, i) => {
-    const mat = new THREE.MeshStandardMaterial({ color: COL_CUERDAS[i], roughness: 0.4, emissive: COL_CUERDAS[i], emissiveIntensity: 0.12 });
-    lados.forEach(([[x1, z1], [x2, z2]], li) => {
-      const len = Math.hypot(x2 - x1, z2 - z1); const cu = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, len, 10), mat);
-      cu.position.set((x1 + x2) / 2, y, (z1 + z2) / 2); cu.rotation.set(Math.PI / 2, 0, 0); cu.lookAt(x2, y, z2); cu.rotateX(Math.PI / 2); cu.castShadow = !MOVIL; cuerdas[li].add(cu);
-    });
+  const cuerdas = lados.map(([[x1, z1], [x2, z2]], li) => {
+    const len = Math.hypot(x2 - x1, z2 - z1);
+    const geo = fundir(ALTOS.map((y, i) => [pinta(new THREE.CylinderGeometry(0.022, 0.022, len, 10), COL_CUERDAS[i], -1), matriz(o => { o.position.set((x1 + x2) / 2, y, (z1 + z2) / 2); o.lookAt(x2, y, z2); o.rotateX(Math.PI / 2); })]));
+    const g = new THREE.Mesh(geo, cuerdaMat); g.castShadow = !MOVIL; g.userData.lado = ['fondo', 'izq', 'der'][li]; grupo.add(g); return g;
   });
 
   // torre de luces: marco cuadrado con focos y haces volumétricos
   const torre = new THREE.Group(); torre.position.y = 5.2; grupo.add(torre);
   const tm = new THREE.MeshStandardMaterial({ color: '#1a1d28', metalness: 0.9, roughness: 0.4 });
-  for (const [x, z, w, d] of [[0, -M, M * 2 + 0.3, 0.12], [0, M, M * 2 + 0.3, 0.12], [-M, 0, 0.12, M * 2], [M, 0, 0.12, M * 2]]) { const b = new THREE.Mesh(new THREE.BoxGeometry(w, 0.12, d), tm); b.position.set(x, 0, z); torre.add(b); }
+  torre.add(new THREE.Mesh(fundir([[0, -M, M * 2 + 0.3, 0.12], [0, M, M * 2 + 0.3, 0.12], [-M, 0, 0.12, M * 2], [M, 0, 0.12, M * 2]].map(([x, z, w, d]) => [new THREE.BoxGeometry(w, 0.12, d), matriz(o => o.position.set(x, 0, z))])), tm));
   const focoMat = new THREE.MeshBasicMaterial({ color: '#ffffff', toneMapped: false });
-  const haces = [];
   const hazMat = new THREE.ShaderMaterial({
     transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
     uniforms: { c: { value: new THREE.Color('#cfd8ff') }, k: { value: 0.07 } },
-    vertexShader: 'varying float vY; varying vec3 vN; varying vec3 vV; void main(){ vY = position.y; vN = normalize(normalMatrix*normal); vec4 mv = modelViewMatrix*vec4(position,1.0); vV = normalize(-mv.xyz); gl_Position = projectionMatrix*mv; }',
+    vertexShader: 'attribute float hy; varying float vY; varying vec3 vN; varying vec3 vV; void main(){ vY = hy; vN = normalize(normalMatrix*normal); vec4 mv = modelViewMatrix*vec4(position,1.0); vV = normalize(-mv.xyz); gl_Position = projectionMatrix*mv; }',
     fragmentShader: 'uniform vec3 c; uniform float k; varying float vY; varying vec3 vN; varying vec3 vV; void main(){ float h = smoothstep(-2.6, 2.6, vY); float f = pow(abs(dot(vN, vV)), 1.5); gl_FragColor = vec4(c, h*f*k); }',
   });
+  // los 8 focos en una malla y los 8 haces en otra (antes 16 llamadas); el alto local de cada cono viaja en 'hy'
+  const focos = [], hz = [];
   for (let i = 0; i < 8; i++) {
     const a = i / 8 * Math.PI * 2 + Math.PI / 8, x = Math.cos(a) * M * 0.95, z = Math.sin(a) * M * 0.95;
-    const foco = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.2, 0.25, 16), focoMat); foco.position.set(x, -0.15, z); torre.add(foco);
-    const haz = new THREE.Mesh(new THREE.ConeGeometry(1.1, 5.2, 32, 1, true), hazMat); haz.position.set(x * 0.6, -2.75, z * 0.6); haz.lookAt(x * 0.6 + x * 0.2, -5.2, z * 0.6 + z * 0.2); haz.rotateX(-Math.PI / 2); torre.add(haz); haces.push(haz);
+    focos.push([new THREE.CylinderGeometry(0.16, 0.2, 0.25, 16), matriz(o => o.position.set(x, -0.15, z))]);
+    const cg = new THREE.ConeGeometry(1.1, 5.2, MOVIL ? 20 : 32, 1, true); const P = cg.attributes.position;
+    cg.setAttribute('hy', new THREE.BufferAttribute(Float32Array.from({ length: P.count }, (_, k) => P.getY(k)), 1));
+    // (la torre está a 5.2 de altura: el destino del lookAt va en coordenadas de la torre)
+    hz.push([cg, matriz(o => { o.position.set(x * 0.6, -2.75, z * 0.6); o.lookAt(x * 0.8, -10.4, z * 0.8); o.rotateX(-Math.PI / 2); })]);
   }
+  torre.add(new THREE.Mesh(fundir(focos), focoMat));
+  if (nivel !== 'bajo') torre.add(new THREE.Mesh(fundir(hz), hazMat)); else hz.forEach(([g]) => g.dispose());
   // luz principal cenital con sombra
   const cenital = new THREE.SpotLight('#ffffff', 60, 14, 0.62, 0.55, 1.6);
   cenital.position.set(0, 6.5, 0.6); cenital.target.position.set(0, 0, 0);
@@ -149,7 +184,7 @@ export function crearRing(scene, renderer) {
   // la pantalla central muestra el cartel oficial de Stream Fighters 5
   new THREE.TextureLoader().load(import.meta.env.BASE_URL + 'sf/cartel.webp', t => { t.colorSpace = THREE.SRGBColorSpace; const p = pantallas[1]; p.material.map?.dispose(); p.material.map = t; p.material.color.setScalar(0.75); p.material.needsUpdate = true; p.userData.cartel = true; });
   // público en penumbra: siluetas tenues y luces de celulares que titilan
-  const NP = MOVIL ? 900 : 2000; const pos = new Float32Array(NP * 3), fase = new Float32Array(NP);
+  const NP = nivel === 'bajo' ? 500 : MOVIL ? 900 : 2000; const pos = new Float32Array(NP * 3), fase = new Float32Array(NP);
   for (let i = 0; i < NP; i++) {
     const a = Math.random() * Math.PI * 2, r = 6.5 + Math.random() * 9, y = -A + 0.6 + (r - 6.5) * 0.45 + Math.random() * 0.4;
     pos[i * 3] = Math.cos(a) * r; pos[i * 3 + 1] = y; pos[i * 3 + 2] = Math.sin(a) * r; fase[i] = Math.random() * 6.28;
@@ -162,6 +197,8 @@ export function crearRing(scene, renderer) {
     fragmentShader: 'uniform vec3 c1; uniform vec3 c2; varying float vA; varying float vB; void main(){ float d = length(gl_PointCoord-0.5); if(d>0.5) discard; gl_FragColor = vec4(mix(c1*0.35, c2, vB), vA*(1.0-d*2.0)); }',
   }));
   publico.frustumCulled = false; grupo.add(publico);
+  // nada del ring se mueve: sus matrices se calculan una vez y no en cada frame
+  grupo.traverse(o => { if (o.isLight) return; o.updateMatrix(); o.matrixAutoUpdate = false; });
 
   // acento: el color del peleador activo tiñe el LED del faldón y los haces
   const colObj = new THREE.Color(SF.brand), colAct = colObj.clone(); let intObj = 0.5, intAct = 0.5, tPrev = null;

@@ -1,5 +1,5 @@
 {
- "_v": 1793957954057,
+ "_v": 1793985890030,
  "westcol": {
   "json": "westcol.json",
   "png": {},
@@ -10,7 +10,6 @@
  "blessd": {
   "json": "blessd.json",
   "png": {},
-  "logo": "blessd_logo.png",
   "renders": {},
   "logoWebp": "blessd_logo.webp"
  }

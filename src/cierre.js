@@ -17,6 +17,11 @@ function crearFx(canvas, acentos, S) {
   const ORO = [232, 194, 122];
   const NV = 9;
   let dpr = 1;
+  // brillo de cada mota pintado una sola vez (antes: un degradado radial nuevo por mota y por cuadro)
+  const mota = document.createElement('canvas'); mota.width = mota.height = 64;
+  { const m = mota.getContext('2d'), g = m.createRadialGradient(32, 32, 0, 32, 32, 32);
+    g.addColorStop(0, 'rgba(255,236,190,1)'); g.addColorStop(0.3, 'rgba(232,194,122,.5)'); g.addColorStop(1, 'rgba(232,194,122,0)');
+    m.fillStyle = g; m.fillRect(0, 0, 64, 64); }
 
   const parts = Array.from({ length: 80 }, () => ({
     x: Math.random(), y: Math.random(),
@@ -25,7 +30,8 @@ function crearFx(canvas, acentos, S) {
   }));
 
   function medir() {
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // es un fondo de luces difusas: en pantallas densas 1.5 basta y se dibuja casi la mitad de píxeles
+    dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     const w = canvas.clientWidth || 1, h = canvas.clientHeight || 1;
     canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr);
     S.w = w; S.h = h;
@@ -78,13 +84,16 @@ function crearFx(canvas, acentos, S) {
     // lineas verticales finas con un brillo que viaja
     if (S.lines > 0.001) {
       ctx.lineWidth = 1;
+      // el degradado vertical es el mismo para todas las líneas: uno por cuadro
+      const g = ctx.createLinearGradient(0, 0, 0, h);
+      g.addColorStop(0, 'rgba(241,237,230,0)');
+      g.addColorStop(0.5, `rgba(241,237,230,${0.075 * S.lines})`);
+      g.addColorStop(1, 'rgba(241,237,230,0)');
+      ctx.strokeStyle = g; ctx.beginPath();
+      for (let i = 0; i < NV; i++) { const x = Math.round(w * (i + 0.5) / NV) + 0.5; ctx.moveTo(x, 0); ctx.lineTo(x, h); }
+      ctx.stroke();
       for (let i = 0; i < NV; i++) {
         const x = Math.round(w * (i + 0.5) / NV) + 0.5;
-        const g = ctx.createLinearGradient(0, 0, 0, h);
-        g.addColorStop(0, 'rgba(241,237,230,0)');
-        g.addColorStop(0.5, `rgba(241,237,230,${0.075 * S.lines})`);
-        g.addColorStop(1, 'rgba(241,237,230,0)');
-        ctx.strokeStyle = g; ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke();
         const sp = 0.05 + (i % 4) * 0.022, ph = (i * 0.37) % 1;
         const yy = (((t * sp + ph) % 1.5) - 0.25) * h, len = h * 0.2;
         const g2 = ctx.createLinearGradient(0, yy - len, 0, yy);
@@ -155,12 +164,10 @@ function crearFx(canvas, acentos, S) {
         const tw = 0.5 + 0.5 * Math.sin(t * p.k + p.f);
         const al = p.a * tw * S.parts;
         const x = p.x * w, y = p.y * h, rr = p.r * 3.4;
-        const g = ctx.createRadialGradient(x, y, 0, x, y, rr);
-        g.addColorStop(0, `rgba(255,236,190,${al})`);
-        g.addColorStop(0.3, `rgba(232,194,122,${al * 0.5})`);
-        g.addColorStop(1, 'rgba(232,194,122,0)');
-        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rr, 0, 6.2832); ctx.fill();
+        if (al < 0.004) continue;
+        ctx.globalAlpha = al; ctx.drawImage(mota, x - rr, y - rr, rr * 2, rr * 2);
       }
+      ctx.globalAlpha = 1;
     }
     ctx.globalCompositeOperation = 'source-over';
   }
