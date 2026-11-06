@@ -1,0 +1,280 @@
+{
+ "artista": "Blessd",
+ "robot": "t800",
+ "concepto": "EL PEOR",
+ "frase": "El hombre malo: negro, vidrio partido y una sola luz, el azul de su pelo.",
+ "acento": "#2651B5",
+ "visor": "#2651B5",
+ "paleta": [
+  {
+   "hex": "#0A0A0A",
+   "rol": "Negro villano",
+   "uso": "Todo el cuerpo",
+   "acabado": "mate"
+  },
+  {
+   "hex": "#3C3D41",
+   "rol": "Gris asfalto",
+   "uso": "Muslos y espinilleras",
+   "acabado": "satinado"
+  },
+  {
+   "hex": "#D1D1D1",
+   "rol": "Blanco grano",
+   "uso": "Grietas y letras impresas",
+   "acabado": "mate"
+  },
+  {
+   "hex": "#2651B5",
+   "rol": "Azul El Peor",
+   "uso": "Casco (sienes)",
+   "acabado": "brillante"
+  },
+  {
+   "hex": "#C5CCD0",
+   "rol": "Plata cadena",
+   "uso": "Hombros, rodillas, cadena",
+   "acabado": "cromo"
+  },
+  {
+   "hex": "#05C3F5",
+   "rol": "Azul Siempre Blessd",
+   "uso": "Solo el halo",
+   "acabado": "color_shift"
+  }
+ ],
+ "zonas": {
+  "casco": {
+   "hex": "#1A1A1C",
+   "acabado": "mate"
+  },
+  "coronilla": {
+   "hex": "#2651B5",
+   "acabado": "brillante"
+  },
+  "pecho": {
+   "hex": "#2E2E31",
+   "acabado": "mate"
+  },
+  "pecho_inf": {
+   "hex": "#2E2E31",
+   "acabado": "mate"
+  },
+  "mochila": {
+   "hex": "#2E2E31",
+   "acabado": "mate"
+  },
+  "hombro": {
+   "hex": "#1A1A1C",
+   "acabado": "satinado"
+  },
+  "brazo": {
+   "hex": "#5A5A5E",
+   "acabado": "mate"
+  },
+  "antebrazo": {
+   "hex": "#6A6A6E",
+   "acabado": "mate"
+  },
+  "cadera": {
+   "hex": "#1A1A1C",
+   "acabado": "mate"
+  },
+  "muslo": {
+   "hex": "#3A3A3D",
+   "acabado": "mate"
+  },
+  "rodilla": {
+   "hex": "#1A1A1C",
+   "acabado": "satinado"
+  },
+  "espinillera": {
+   "hex": "#3A3A3D",
+   "acabado": "mate"
+  },
+  "bota": {
+   "hex": "#111113",
+   "acabado": "mate"
+  }
+ },
+ "variantes": [
+  {
+   "concepto": "EL MEJOR",
+   "frase": "El otro disco: el bendito. Blanco perla, cielo y halo.",
+   "acento": "#05C3F5",
+   "visor": "#05C3F5",
+   "paleta": [
+    {
+     "hex": "#F2F3F4",
+     "rol": "Blanco perla",
+     "uso": "Cuerpo",
+     "acabado": "perla"
+    },
+    {
+     "hex": "#05C3F5",
+     "rol": "Azul Siempre Blessd",
+     "uso": "Casco, antebrazos",
+     "acabado": "color_shift"
+    },
+    {
+     "hex": "#C5CCD0",
+     "rol": "Plata cadena",
+     "uso": "Hombros, rodillas, cadera",
+     "acabado": "cromo"
+    },
+    {
+     "hex": "#9EC1D0",
+     "rol": "Cielo",
+     "uso": "Espinilleras",
+     "acabado": "satinado"
+    }
+   ],
+   "zonas": {
+    "casco": {
+     "hex": "#05C3F5",
+     "acabado": "color_shift"
+    },
+    "coronilla": {
+     "hex": "#F2F3F4",
+     "acabado": "perla"
+    },
+    "pecho": {
+     "hex": "#F2F3F4",
+     "acabado": "perla"
+    },
+    "pecho_inf": {
+     "hex": "#C5CCD0",
+     "acabado": "cromo"
+    },
+    "mochila": {
+     "hex": "#F2F3F4",
+     "acabado": "perla"
+    },
+    "hombro": {
+     "hex": "#C5CCD0",
+     "acabado": "cromo"
+    },
+    "brazo": {
+     "hex": "#F2F3F4",
+     "acabado": "perla"
+    },
+    "antebrazo": {
+     "hex": "#05C3F5",
+     "acabado": "brillante"
+    },
+    "cadera": {
+     "hex": "#C5CCD0",
+     "acabado": "cromo"
+    },
+    "muslo": {
+     "hex": "#F2F3F4",
+     "acabado": "perla"
+    },
+    "rodilla": {
+     "hex": "#C5CCD0",
+     "acabado": "cromo"
+    },
+    "espinillera": {
+     "hex": "#9EC1D0",
+     "acabado": "satinado"
+    },
+    "bota": {
+     "hex": "#F2F3F4",
+     "acabado": "perla"
+    }
+   }
+  },
+  {
+   "concepto": "SIEMPRE BLESSD",
+   "frase": "Su azul firma de punta a punta, con cadena de plata.",
+   "acento": "#05C3F5",
+   "visor": "#F2F3F4",
+   "paleta": [
+    {
+     "hex": "#05C3F5",
+     "rol": "Azul Siempre Blessd",
+     "uso": "Casco, pecho, muslos",
+     "acabado": "brillante"
+    },
+    {
+     "hex": "#F2F3F4",
+     "rol": "Blanco",
+     "uso": "Brazos, espinilleras, botas",
+     "acabado": "brillante"
+    },
+    {
+     "hex": "#0A0A0A",
+     "rol": "Negro",
+     "uso": "Torso inferior, cadera",
+     "acabado": "satinado"
+    },
+    {
+     "hex": "#C5CCD0",
+     "rol": "Plata cadena",
+     "uso": "Hombros y rodillas",
+     "acabado": "cromo"
+    }
+   ],
+   "zonas": {
+    "casco": {
+     "hex": "#05C3F5",
+     "acabado": "brillante"
+    },
+    "coronilla": {
+     "hex": "#05C3F5",
+     "acabado": "brillante"
+    },
+    "pecho": {
+     "hex": "#05C3F5",
+     "acabado": "brillante"
+    },
+    "pecho_inf": {
+     "hex": "#0A0A0A",
+     "acabado": "satinado"
+    },
+    "mochila": {
+     "hex": "#05C3F5",
+     "acabado": "brillante"
+    },
+    "hombro": {
+     "hex": "#C5CCD0",
+     "acabado": "cromo"
+    },
+    "brazo": {
+     "hex": "#F2F3F4",
+     "acabado": "brillante"
+    },
+    "antebrazo": {
+     "hex": "#F2F3F4",
+     "acabado": "brillante"
+    },
+    "cadera": {
+     "hex": "#0A0A0A",
+     "acabado": "satinado"
+    },
+    "muslo": {
+     "hex": "#05C3F5",
+     "acabado": "brillante"
+    },
+    "rodilla": {
+     "hex": "#C5CCD0",
+     "acabado": "cromo"
+    },
+    "espinillera": {
+     "hex": "#F2F3F4",
+     "acabado": "brillante"
+    },
+    "bota": {
+     "hex": "#F2F3F4",
+     "acabado": "brillante"
+    }
+   }
+  }
+ ],
+ "impresos": [
+  "pecho: su retrato de El Peor en B/N + cadena cubana plateada",
+  "todo el cuerpo: grietas blancas de vidrio partido y chorreones azul #2651B5",
+  "antebrazos: tatuajes de línea fina",
+  "espinilleras: EL / PEOR en gótica blanca"
+ ]
+}

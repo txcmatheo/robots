@@ -1,0 +1,11 @@
+{
+ "_v": 1793928625,
+ "musica": "musica_fondo.mp3",
+ "transicion": "sfx_transicion.mp3",
+ "escaneo": "sfx_escaneo.mp3",
+ "despiece": "sfx_despiece.mp3",
+ "clic": "sfx_clic.mp3",
+ "golpe": "sfx_golpe.mp3",
+ "tema_westcol": "tema_westcol.mp3",
+ "tema_blessd": "tema_blessd.mp3"
+}

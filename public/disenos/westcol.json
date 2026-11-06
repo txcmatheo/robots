@@ -1,0 +1,280 @@
+{
+ "artista": "Westcol",
+ "robot": "t800",
+ "concepto": "MAJIN W",
+ "frase": "La M de Majin, al revés, es una W. El robot se viste de Buu.",
+ "acento": "#F4A3C4",
+ "visor": "#F4A3C4",
+ "paleta": [
+  {
+   "hex": "#F4A3C4",
+   "rol": "Rosa Majin",
+   "uso": "Casco, hombros y brazos",
+   "acabado": "brillante"
+  },
+  {
+   "hex": "#0B0B0D",
+   "rol": "Negro chaleco",
+   "uso": "Pecho",
+   "acabado": "satinado"
+  },
+  {
+   "hex": "#F2F2F0",
+   "rol": "Blanco de fábrica",
+   "uso": "Muslos y espinilleras (el pantalón)",
+   "acabado": "fabrica"
+  },
+  {
+   "hex": "#F2C230",
+   "rol": "Oro Majin",
+   "uso": "Antebrazos (guantes), cadera (hebilla), botas",
+   "acabado": "oro"
+  },
+  {
+   "hex": "#4B2A6B",
+   "rol": "Púrpura capa",
+   "uso": "Mochila",
+   "acabado": "satinado"
+  },
+  {
+   "hex": "#FF0700",
+   "rol": "Rojo W Sound",
+   "uso": "Solo la marca Majin W",
+   "acabado": "brillante"
+  }
+ ],
+ "zonas": {
+  "casco": {
+   "hex": "#F4A3C4",
+   "acabado": "brillante"
+  },
+  "coronilla": {
+   "hex": "#F4A3C4",
+   "acabado": "brillante"
+  },
+  "pecho": {
+   "hex": "#F4A3C4",
+   "acabado": "brillante"
+  },
+  "pecho_inf": {
+   "hex": "#F4A3C4",
+   "acabado": "brillante"
+  },
+  "mochila": {
+   "hex": "#F4A3C4",
+   "acabado": "brillante"
+  },
+  "hombro": {
+   "hex": "#F4A3C4",
+   "acabado": "brillante"
+  },
+  "brazo": {
+   "hex": "#F4A3C4",
+   "acabado": "brillante"
+  },
+  "antebrazo": {
+   "hex": "#F4A3C4",
+   "acabado": "brillante"
+  },
+  "cadera": {
+   "hex": "#F2C230",
+   "acabado": "oro"
+  },
+  "muslo": {
+   "hex": "#F4A3C4",
+   "acabado": "brillante"
+  },
+  "rodilla": {
+   "hex": "#F4A3C4",
+   "acabado": "brillante"
+  },
+  "espinillera": {
+   "hex": "#F4A3C4",
+   "acabado": "brillante"
+  },
+  "bota": {
+   "hex": "#F2C230",
+   "acabado": "oro"
+  }
+ },
+ "variantes": [
+  {
+   "concepto": "KID W",
+   "frase": "Buu en su forma más pura: rosa que cambia a púrpura y energía rosa.",
+   "acento": "#E040A0",
+   "visor": "#E040A0",
+   "paleta": [
+    {
+     "hex": "#F4A3C4",
+     "rol": "Rosa a púrpura",
+     "uso": "Casco, pecho, brazos",
+     "acabado": "color_shift"
+    },
+    {
+     "hex": "#0B0B0D",
+     "rol": "Negro",
+     "uso": "Piernas y cadera",
+     "acabado": "mate"
+    },
+    {
+     "hex": "#E040A0",
+     "rol": "Energía rosa",
+     "uso": "Rayos impresos",
+     "acabado": "brillante"
+    },
+    {
+     "hex": "#F6C7DA",
+     "rol": "Rosa perla",
+     "uso": "Hombros y rodillas",
+     "acabado": "perla"
+    }
+   ],
+   "zonas": {
+    "casco": {
+     "hex": "#F4A3C4",
+     "acabado": "color_shift"
+    },
+    "coronilla": {
+     "hex": "#F4A3C4",
+     "acabado": "color_shift"
+    },
+    "pecho": {
+     "hex": "#F4A3C4",
+     "acabado": "color_shift"
+    },
+    "pecho_inf": {
+     "hex": "#0B0B0D",
+     "acabado": "mate"
+    },
+    "mochila": {
+     "hex": "#0B0B0D",
+     "acabado": "mate"
+    },
+    "hombro": {
+     "hex": "#F6C7DA",
+     "acabado": "perla"
+    },
+    "brazo": {
+     "hex": "#F4A3C4",
+     "acabado": "color_shift"
+    },
+    "antebrazo": {
+     "hex": "#F4A3C4",
+     "acabado": "color_shift"
+    },
+    "cadera": {
+     "hex": "#0B0B0D",
+     "acabado": "mate"
+    },
+    "muslo": {
+     "hex": "#0B0B0D",
+     "acabado": "mate"
+    },
+    "rodilla": {
+     "hex": "#F6C7DA",
+     "acabado": "perla"
+    },
+    "espinillera": {
+     "hex": "#0B0B0D",
+     "acabado": "mate"
+    },
+    "bota": {
+     "hex": "#0B0B0D",
+     "acabado": "mate"
+    }
+   }
+  },
+  {
+   "concepto": "W SOUND 24",
+   "frase": "El robot como el lanzamiento 24 de W Sound: rojo, negro y blanco.",
+   "acento": "#FF0700",
+   "visor": "#FF0700",
+   "paleta": [
+    {
+     "hex": "#FF0700",
+     "rol": "Rojo W Sound",
+     "uso": "Casco, antebrazos",
+     "acabado": "brillante"
+    },
+    {
+     "hex": "#0B0B0D",
+     "rol": "Negro",
+     "uso": "Torso inferior, brazos, mochila, espinilleras",
+     "acabado": "satinado"
+    },
+    {
+     "hex": "#F2F2F0",
+     "rol": "Blanco de fábrica",
+     "uso": "Pecho, muslos, botas",
+     "acabado": "fabrica"
+    },
+    {
+     "hex": "#B1B3B2",
+     "rol": "Cromo de la W",
+     "uso": "Hombros y rodillas",
+     "acabado": "cromo"
+    }
+   ],
+   "zonas": {
+    "casco": {
+     "hex": "#FF0700",
+     "acabado": "brillante"
+    },
+    "coronilla": {
+     "hex": "#0B0B0D",
+     "acabado": "satinado"
+    },
+    "pecho": {
+     "hex": "#F2F2F0",
+     "acabado": "fabrica"
+    },
+    "pecho_inf": {
+     "hex": "#0B0B0D",
+     "acabado": "brillante"
+    },
+    "mochila": {
+     "hex": "#0B0B0D",
+     "acabado": "mate"
+    },
+    "hombro": {
+     "hex": "#B1B3B2",
+     "acabado": "cromo"
+    },
+    "brazo": {
+     "hex": "#0B0B0D",
+     "acabado": "satinado"
+    },
+    "antebrazo": {
+     "hex": "#FF0700",
+     "acabado": "brillante"
+    },
+    "cadera": {
+     "hex": "#0B0B0D",
+     "acabado": "satinado"
+    },
+    "muslo": {
+     "hex": "#F2F2F0",
+     "acabado": "fabrica"
+    },
+    "rodilla": {
+     "hex": "#B1B3B2",
+     "acabado": "cromo"
+    },
+    "espinillera": {
+     "hex": "#0B0B0D",
+     "acabado": "satinado"
+    },
+    "bota": {
+     "hex": "#F2F2F0",
+     "acabado": "fabrica"
+    }
+   }
+  }
+ ],
+ "impresos": [
+  "pecho: W angulosa estilo Majin roja con borde dorado y negro",
+  "muslo: WESTCOL ultra extendida blanca con borde negro",
+  "todo el cuerpo: rayos de energía magenta y nubes de vapor de cómic",
+  "cadera: hebilla oro con la M de Majin"
+ ]
+}
