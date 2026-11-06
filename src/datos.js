@@ -177,7 +177,7 @@ export const WESTCOL_DISENOS = [
   },
   {
     nombre: 'KICK', acento: KICK, visor: KICK,
-    idea: 'Su casa es Kick: negro satinado de estudio, verde Kick en casco, antebrazos y botas, el logo de Kick grande en el pecho y su canal en la espalda.',
+    idea: 'Su casa es Kick: negro satinado, verde Kick en casco, antebrazos y botas, el logo de Kick grande en el pecho y su canal en la espalda.',
     paleta: [NEGRO, KICK, '#1A1C1F', BLANCO, CROMO],
     z: {
       casco: [KICK, 'gloss'], coronilla: [NEGRO, 'gloss'], pecho: [NEGRO, 'satin'], pecho_inf: ['#1A1C1F', 'matte'],
@@ -185,7 +185,7 @@ export const WESTCOL_DISENOS = [
       cadera: ['#1A1C1F', 'matte'], muslo: [NEGRO, 'satin'], rodilla: [CROMO, 'chrome'], espinillera: ['#1A1C1F', 'carbon'], bota: [KICK, 'gloss'],
     },
     p: {
-      pecho: (c, W, H) => { kickLogo(c, W, H, { y: 0.44, w: 0.78 }); rec(c, W, H, 0.3, 0.86, H * 0.035, '#ff2d2d'); texto(c, W, H, 'EN VIVO', { size: H * 0.08, color: BLANCO, x: 0.56, y: 0.86, maxW: 0.4, font: 'JetBrains Mono', weight: 800 }); },
+      pecho: (c, W, H) => kickLogo(c, W, H, { y: 0.5, w: 0.84 }),
       mochila: (c, W, H) => { wMono(c, W, H, { color: KICK, y: 0.36, s: 0.42 }); texto(c, W, H, 'kick.com/westcol', { size: H * 0.075, color: BLANCO, y: 0.78, maxW: 0.86, font: 'JetBrains Mono', weight: 700 }); },
       muslo: (c, W, H) => vertical(c, W, H, 'WESTCOL', { size: W * 0.5, color: KICK }),
       espinillera: (c, W, H) => { c.fillStyle = KICK; c.fillRect(W * 0.08, H * 0.04, W * 0.84, H * 0.025); },
@@ -247,6 +247,73 @@ export const WESTCOL_DISENOS = [
       antebrazo: (c, W, H) => { c.fillStyle = '#FFC400'; c.fillRect(0, H * 0.82, W, H * 0.06); },
       espinillera: (c, W, H) => vertical(c, W, H, 'WESTCOL', { size: W * 0.34, color: '#F2F2F0', font: 'JetBrains Mono', weight: 800 }),
       bota: (c, W, H) => { c.fillStyle = '#F2F2F0'; c.fillRect(0, H * 0.18, W, H * 0.07); c.fillRect(0, H * 0.75, W, H * 0.07); },
+    },
+    glow: {},
+  },
+];
+
+// ---------- Blessd ----------
+// Sus dos discos de 2026 como dos pieles: EL MEJOR HOMBRE DEL MUNDO (el azul de su pelo, el halo)
+// y EL PEOR HOMBRE DEL MUNDO (negro, trap, los cuernos sobre la H).
+function siglas(c, W, H, t, { y = 0.5, size = H * 0.2, color = BLANCO, cuernos = false, halo = false, haloColor = '#F2F2F0', maxW = 0.9, gastado = true } = {}) {
+  c.save(); c.font = `900 ${size}px Unbounded`; c.textBaseline = 'middle';
+  const m = c.measureText(t).width, sx = Math.min(1, (maxW * W) / m);
+  c.translate(W / 2 - (m * sx) / 2, y * H); c.scale(sx, 1); c.fillStyle = color; c.fillText(t, 0, 0);
+  if (gastado) { // estarcido gastado como en la portada
+    c.globalCompositeOperation = 'destination-out'; let sd = 11; const rn = () => { sd = (sd * 9301 + 49297) % 233280; return sd / 233280; };
+    for (let i = 0; i < 160; i++) { c.beginPath(); c.arc(rn() * m, (rn() - 0.5) * size * 0.8, size * (0.008 + rn() * 0.03), 0, Math.PI * 2); c.fill(); }
+    c.globalCompositeOperation = 'source-over';
+  }
+  const i = t.indexOf('H'); if (i >= 0 && (cuernos || halo)) {
+    const xh = c.measureText(t.slice(0, i)).width + c.measureText('H').width / 2, by = -size * 0.42, k = size * 0.42;
+    if (cuernos) { c.fillStyle = color; for (const sg of [-1, 1]) { c.beginPath(); c.moveTo(xh + sg * k * 0.12, by); c.quadraticCurveTo(xh + sg * k * 1.05, by - k * 0.15, xh + sg * k * 0.78, by - k * 1.05); c.quadraticCurveTo(xh + sg * k * 0.62, by - k * 0.4, xh + sg * k * 0.02, by + k * 0.05); c.closePath(); c.fill(); } }
+    if (halo) { c.strokeStyle = haloColor; c.lineWidth = size * 0.06; c.beginPath(); c.ellipse(xh, by - k * 0.55, k * 0.75, k * 0.2, 0, 0, Math.PI * 2); c.stroke(); }
+  }
+  c.restore();
+}
+function grietas(c, W, H, color = '#D1D1D1', seed = 7, cx = 0.5, cy = 0.45) {
+  c.save(); c.strokeStyle = color; c.lineCap = 'round'; let sd = seed; const rn = () => { sd = (sd * 9301 + 49297) % 233280; return sd / 233280; };
+  for (let i = 0; i < 9; i++) { let x = cx * W, y = cy * H, a = (i / 9) * Math.PI * 2 + rn() * 0.4; c.lineWidth = Math.max(2, H * 0.01); c.beginPath(); c.moveTo(x, y); for (let k = 0; k < 6; k++) { a += (rn() - 0.5) * 0.8; const L = Math.min(W, H) * (0.06 + rn() * 0.1); x += Math.cos(a) * L; y += Math.sin(a) * L; c.lineTo(x, y); } c.stroke(); }
+  c.restore();
+}
+function cadena(c, W, H, color = '#C5CCD0', y0 = 0.05, depth = 0.4) { // cadena cubana helada
+  c.save(); c.strokeStyle = color; c.lineWidth = H * 0.03; c.shadowColor = '#ffffff'; c.shadowBlur = H * 0.02;
+  for (let i = 0; i < 18; i++) { const t = i / 17, x = W * (0.16 + 0.68 * t), y = H * (y0 + Math.sin(t * Math.PI) * depth); c.beginPath(); c.ellipse(x, y, H * 0.035, H * 0.022, i % 2 ? 0.7 : -0.7, 0, Math.PI * 2); c.stroke(); }
+  c.restore();
+}
+const AZUL_B = '#1F4FE0', CIELO = '#9CC2EE', NEGRO_B = '#0A0A0A', ASFALTO = '#3C3D41', PLATA = '#C5CCD0';
+export const BLESSD_DISENOS = [
+  {
+    nombre: 'E.P.H.D.M', acento: '#D1D1D1', visor: '#E8E8E8',
+    idea: 'El Peor Hombre del Mundo: negro trap de punta a punta, las siglas estarcidas con los cuernos sobre la H, vidrio partido y cadena helada en el pecho, cromo en hombros y rótulas, piernas asfalto.',
+    paleta: [NEGRO_B, ASFALTO, '#D1D1D1', PLATA],
+    z: {
+      casco: [NEGRO_B, 'matte'], coronilla: [NEGRO_B, 'gloss'], pecho: [NEGRO_B, 'matte'], pecho_inf: [NEGRO_B, 'matte'],
+      mochila: [NEGRO_B, 'matte'], hombro: [PLATA, 'chrome'], brazo: [NEGRO_B, 'matte'], antebrazo: ['#1E1F22', 'satin'],
+      cadera: [NEGRO_B, 'matte'], muslo: [ASFALTO, 'satin'], rodilla: [PLATA, 'chrome'], espinillera: ['#1A1B1E', 'carbon'], bota: [NEGRO_B, 'matte'],
+    },
+    p: {
+      pecho: (c, W, H) => { grietas(c, W, H, 'rgba(209,209,209,.55)', 7, 0.7, 0.35); cadena(c, W, H, PLATA, 0.02, 0.22); siglas(c, W, H, 'E.P.H.D.M', { y: 0.68, size: H * 0.2, cuernos: true, maxW: 0.86 }); },
+      mochila: (c, W, H) => { siglas(c, W, H, 'EL PEOR', { y: 0.32, size: H * 0.17, maxW: 0.84 }); texto(c, W, H, 'HOMBRE DEL MUNDO', { size: H * 0.065, color: '#D1D1D1', y: 0.52, font: 'JetBrains Mono', weight: 800, maxW: 0.8 }); grietas(c, W, H, 'rgba(209,209,209,.4)', 3, 0.5, 0.8); },
+      muslo: (c, W, H) => vertical(c, W, H, 'EL PEOR', { size: W * 0.5, color: '#D1D1D1' }),
+      espinillera: (c, W, H) => { c.fillStyle = '#D1D1D1'; c.fillRect(W * 0.08, H * 0.04, W * 0.84, H * 0.012); },
+    },
+    glow: {},
+  },
+  {
+    nombre: 'E.M.H.D.M', acento: AZUL_B, visor: AZUL_B,
+    idea: 'El Mejor Hombre del Mundo: el azul de su pelo en casco, brazos y cadera, blanco y cielo como la portada, las siglas con el halo encima de la H en el pecho y el nombre completo en la espalda.',
+    paleta: [AZUL_B, BLANCO, CIELO, PLATA],
+    z: {
+      casco: [AZUL_B, 'gloss'], coronilla: [AZUL_B, 'pearl'], pecho: [BLANCO, 'gloss'], pecho_inf: [AZUL_B, 'gloss'],
+      mochila: [BLANCO, 'gloss'], hombro: [AZUL_B, 'pearl'], brazo: [AZUL_B, 'gloss'], antebrazo: [BLANCO, 'gloss'],
+      cadera: [AZUL_B, 'satin'], muslo: [BLANCO, 'gloss'], rodilla: [PLATA, 'chrome'], espinillera: [CIELO, 'gloss'], bota: [BLANCO, 'gloss'],
+    },
+    p: {
+      pecho: (c, W, H) => siglas(c, W, H, 'E.M.H.D.M', { y: 0.6, size: H * 0.22, color: AZUL_B, halo: true, haloColor: '#E8C27A', maxW: 0.86 }),
+      mochila: (c, W, H) => { c.save(); c.strokeStyle = '#E8C27A'; c.lineWidth = H * 0.018; c.beginPath(); c.ellipse(W / 2, H * 0.14, W * 0.18, H * 0.04, 0, 0, Math.PI * 2); c.stroke(); c.restore(); siglas(c, W, H, 'EL MEJOR', { y: 0.36, size: H * 0.15, color: AZUL_B, maxW: 0.84 }); texto(c, W, H, 'HOMBRE DEL MUNDO', { size: H * 0.065, color: AZUL_B, y: 0.55, font: 'JetBrains Mono', weight: 800, maxW: 0.8 }); },
+      muslo: (c, W, H) => vertical(c, W, H, 'BLESSD', { size: W * 0.5, color: AZUL_B }),
+      bota: (c, W, H) => { c.fillStyle = AZUL_B; c.fillRect(0, H * 0.74, W, H * 0.12); },
     },
     glow: {},
   },

@@ -1,4 +1,4 @@
-// Blindados
+// Segunda piel
 // Westcol y Blessd sobre el EngineAI T800 Max.
 import './fuentes.js';
 import './styles.css';
@@ -16,7 +16,7 @@ import { DecalGeometry } from 'three/addons/geometries/DecalGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { crearEstudio } from './estudio.js';
 import { mostrarCierre, ocultarCierre } from './cierre.js';
-import { ARTISTAS, CANCION, FABRICA, IMPRESOS_FABRICA, MODELO, WESTCOL_DISENOS, ZONAS } from './datos.js';
+import { ARTISTAS, CANCION, FABRICA, IMPRESOS_FABRICA, MODELO, WESTCOL_DISENOS, BLESSD_DISENOS, ZONAS } from './datos.js';
 
 const N = ARTISTAS.length;
 const BASE = import.meta.env.BASE_URL;
@@ -329,7 +329,9 @@ async function cargarEntregas() {
       c.id = String.fromCharCode(65 + conceptos.length); conceptos.push(c);
     }
     // Westcol usa su colección propia (W Sound, Kid W, En vivo); el resto, la del JSON
-    art.conceptos = art.id === 'westcol' ? WESTCOL_DISENOS.map((x, k) => ({ ...x, z: { ...FABRICA, ...x.z }, id: String.fromCharCode(65 + k) })) : conceptos;
+    // las colecciones se definen en datos.js; de Blessd se conserva SIEMPRE BLESSD del JSON
+    const propios = art.id === 'westcol' ? WESTCOL_DISENOS : art.id === 'blessd' ? [...BLESSD_DISENOS, ...conceptos.filter(c => c.nombre === 'SIEMPRE BLESSD')] : null;
+    art.conceptos = propios ? propios.map((x, k) => ({ ...x, z: { ...FABRICA, ...x.z }, id: String.fromCharCode(65 + k) })) : conceptos;
     if (files.logo) art.logo = d(files.logo);
     if (files.logoWebp) art.logoWebp = d(files.logoWebp);
     art.renders = Object.fromEntries(Object.entries(files.renders || {}).map(([k, f]) => [k, d(f)]));
@@ -341,7 +343,7 @@ async function cargarEntregas() {
 // porque la fusión de mallas necesita saber qué material lleva cada pieza en cada diseño.
 async function cargarDisenos3D() {
   const mm = await getJSON(BASE + 'modelos/manifest.json'); if (!mm) return [];
-  return Promise.all(Object.entries(mm).filter(([k]) => /_[A-C]$/.test(k) && !k.startsWith('westcol')).map(async ([k, f]) => {
+  return Promise.all(Object.entries(mm).filter(([k]) => /_[A-C]$/.test(k) && !/^(westcol|blessd)/.test(k)).map(async ([k, f]) => {
     try {
       const g = (await gltf.loadAsync(BASE + 'modelos/' + f + '?v=' + (mm._v || 0))).scene; const [id, letra] = k.split('_');
       const mats = new Map(), calcos = []; g.updateMatrixWorld(true);
@@ -561,7 +563,7 @@ function setExplode(r, v) { gsap.to(r.userData, { explode: v, duration: 1.3, eas
 
 // ================= CAPÍTULO DE CADA ROBOT =================
 const FN = { gloss: 'Brillante', satin: 'Satinado', matte: 'Mate', chrome: 'Cromo espejo', gold: 'Cromo oro', shift: 'Color shift', holo: 'Holográfico', pearl: 'Perla', carbon: 'Carbono', acero: 'Acero gastado', factory: 'De fábrica', factorym: 'De fábrica' };
-const titulo = s => String(s).split(' ').map(w => w.length === 1 || /\d/.test(w) ? w.toUpperCase() : w.charAt(0) + w.slice(1).toLowerCase()).join(' ');
+const titulo = s => String(s).split(' ').map(w => w.length === 1 || /[\d.]/.test(w) ? w.toUpperCase() : w.charAt(0) + w.slice(1).toLowerCase()).join(' ');
 const slug = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 function logoHTML(a, cls = '') {
@@ -793,7 +795,7 @@ function wireUI() {
   $$('#chapters a').forEach(a => a.onclick = e => { e.preventDefault(); goCh(+a.dataset.i); });
   $('#jump').innerHTML = ARTISTAS.map(a => `<button style="--c:${a.conceptos[0]?.acento || a.acento}">${a.nombre} →</button>`).join('');
   $$('#jump button').forEach((b, i) => b.onclick = () => goCh(1 + i));
-  const tk = ['BLINDADOS', ...ARTISTAS.map(a => `${a.nombre} — ${a.conceptos[0]?.nombre || 'EN DISEÑO'}`), MODELO.nombre, 'PELÍCULA DE PROTECCIÓN, PANEL POR PANEL', 'NUNCA SE TAPA UN SENSOR', 'DISEÑO SOBRE EL MODELO OFICIAL'].join('  ·  ') + '  ·  ';
+  const tk = ['SEGUNDA PIEL', ...ARTISTAS.map(a => `${a.nombre} — ${a.conceptos[0]?.nombre || 'EN DISEÑO'}`), MODELO.nombre, 'PELÍCULA DE PROTECCIÓN, PANEL POR PANEL', 'NUNCA SE TAPA UN SENSOR', 'DISEÑO SOBRE EL MODELO OFICIAL'].join('  ·  ') + '  ·  ';
   $('#ticker-in').textContent = tk + tk + tk;
 
   let down = null, pend = null;
@@ -878,7 +880,7 @@ function openPiel() {
 // ================= PORTADA =================
 const BOOT_LINES = ['CARGANDO MODELO OFICIAL ' + MODELO.nombre, 'PANELES Y ZONAS SIN FORRAR', 'PIELES DE WESTCOL · BLESSD', 'LISTO'];
 async function boot() {
-  $('.cover h1').innerHTML = '<em>' + [...'Blindados.'].map(c => `<span class="ch">${c}</span>`).join('') + '</em>';
+  $('.cover h1').innerHTML = [...'Segunda '].map(c => `<span class="ch">${c === ' ' ? '&nbsp;' : c}</span>`).join('') + '<em>' + [...'piel.'].map(c => `<span class="ch">${c}</span>`).join('') + '</em>';
   gsap.fromTo('.cover h1 .ch', { yPercent: 110, opacity: 0 }, { yPercent: 0, opacity: 1, duration: 1.2, stagger: 0.04, ease: 'expo.out', delay: 0.05 });
   gsap.fromTo(['.lockup > *', '.who'], { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 1.2, stagger: 0.15, ease: 'expo.out', delay: 0.3 });
   const log = $('#boot-log'); const bar = $('#boot-bar i'); const pct = $('#boot-pct');
@@ -940,7 +942,7 @@ function intro() {
     sfx.boom(); setAcc('#e8c27a'); backdrop('#e8c27a', 0.22);
     stands.forEach(s => gsap.to(s.spot, { intensity: 4, duration: 0.8 }));
     gsap.to(key, { intensity: k0, duration: 1.6 }); gsap.to(rim1, { intensity: r0, duration: 1.6 }); gsap.to(scene, { environmentIntensity: h0, duration: 1.6 });
-    $('#io-logo').innerHTML = ''; palabras($('#io-name'), 'Blindados.'); $('#io-sub').textContent = 'WESTCOL × BLESSD · ' + MODELO.nombre;
+    $('#io-logo').innerHTML = ''; palabras($('#io-name'), 'Segunda piel.'); $('#io-sub').textContent = 'WESTCOL × BLESSD · ' + MODELO.nombre;
     gsap.fromTo('.io-c', { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.8, ease: 'expo.out' });
   }, tEnd)
     .to(camera.position, { x: -0.55, y: 1.15, z: 5.4, duration: 2.6, ease: 'power3.inOut' }, tEnd)

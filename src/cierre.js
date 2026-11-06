@@ -1,4 +1,4 @@
-/* Cierre animado: los hilos de color de Westcol y Blessd convergen en "Blindados." */
+/* Cierre animado: los hilos de color de Westcol y Blessd convergen en "Segunda piel." */
 import { gsap } from 'gsap';
 import './cierre.css';
 
@@ -181,7 +181,7 @@ export function mostrarCierre(contenedor, { acentos = ['#F4A3C4', '#2651B5'], no
     contenedor.innerHTML = '';
     const root = document.createElement('div');
     root.className = 'cz';
-    const letras = 'Blindados.'.split('').map((c) =>
+    const letras = 'Segunda piel.'.split('').map((c) =>
       c === ' ' ? '<span class="cz-chm" style="width:.28em"><span class="cz-ch">&nbsp;</span></span>'
         : `<span class="cz-chm"><span class="cz-ch">${c}</span></span>`).join('');
     // cuatro hilos: los dos colores, cada uno desde dos esquinas
@@ -191,9 +191,9 @@ export function mostrarCierre(contenedor, { acentos = ['#F4A3C4', '#2651B5'], no
       <div class="cz-vig"></div>
       <div class="cz-stage">
         <p class="cz-duo"><b style="--c:${colores[0]}">${nombres[0]}</b><i>×</i><b style="--c:${colores[1]}">${nombres[1]}</b></p>
-        <h2 class="cz-h1" aria-label="Blindados.">
+        <h2 class="cz-h1" aria-label="Segunda piel.">
           <span class="cz-h1-base" aria-hidden="true">${letras}</span>
-          <span class="cz-h1-shine" aria-hidden="true">Blindados.</span>
+          <span class="cz-h1-shine" aria-hidden="true">Segunda piel.</span>
         </h2>
         <div class="cz-rule" aria-hidden="true"><i></i><i></i></div>
         <p class="cz-m1">${sub}</p>

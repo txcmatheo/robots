@@ -1,4 +1,4 @@
-# Blindados · Westcol × Blessd
+# Segunda piel · Westcol × Blessd
 
 Experiencia 3D sobre dos robots **EngineAI T800 Max** forrados en película PPF. Está construida con Vite, three.js y GSAP.
 

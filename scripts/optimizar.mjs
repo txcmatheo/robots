@@ -20,7 +20,7 @@ const RAW = join(ROOT, 'raw');
 const OUT = join(ROOT, 'public');
 const solo = process.argv[2]; // opcional: glb | img | video | audio
 // Solo Westcol y Blessd sobre el EngineAI T800 Max
-const USAR = /^(fabrica_t800|blessd)/;
+const USAR = /^(fabrica_t800)/;
 const FUERA = /^(krisr|diomedes|tema_krisr|tema_diomedes|westcol_majin)/;
 const kb = (f) => (statSync(f).size / 1024).toFixed(0) + ' KB';
 const md = (d) => mkdirSync(d, { recursive: true });
