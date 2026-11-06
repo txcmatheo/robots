@@ -493,7 +493,7 @@ function camTo(pos, tgt, dur = 1.6, ease = 'power3.inOut') {
   gsap.to(camera.position, { x: pos.x, y: pos.y, z: pos.z, duration: dur, ease });
   gsap.to(look, { x: tgt.x, y: tgt.y, z: tgt.z, duration: dur, ease });
 }
-function camSelect() { const n = isNarrow(), z = 5.4 + Math.max(0, 1.7 - innerWidth / innerHeight) * 2.4; camTo(n ? V(POS[S.idx] * 0.6, 0.9, 6.4) : V(-0.55, 1.15, z), n ? V(POS[S.idx] * 0.6, 0.6, 0) : V(-0.55, 0.86, 0), 2.2); }
+function camSelect() { const n = isNarrow(), z = 5.4 + Math.max(0, 1.7 - innerWidth / innerHeight) * 2.4; const zn = 6.4 + Math.max(0, 0.9 - innerWidth / innerHeight) * 7; camTo(n ? V(0, 0.95, zn) : V(-0.55, 1.15, z), n ? V(0, 0.62, 0) : V(-0.55, 0.86, 0), 2.2); }
 function camGarage() { const n = isNarrow(); camTo(V(0.4, n ? 0.95 : 1.15, n ? 6.2 : 3.9), V(n ? 0 : -0.45, n ? 0.45 : 0.92, 0), 1.9); }
 
 // ================= CAPÍTULOS =================
@@ -570,6 +570,7 @@ function fillGarage() {
   $('#g-idea').textContent = c ? c.idea : 'Su piel está en diseño.';
   $('#g-concepts').innerHTML = a.conceptos.map((k, j) => `<button class="tab ${j === ci ? 'on' : ''}" data-c="${j}" aria-pressed="${j === ci}"><b>${k.id} · ${esc(k.nombre)}</b><span class="sw">${k.paleta.slice(0, 5).map(p => `<i style="background:${p}"></i>`).join('')}</span><small>${j === 0 ? 'PRINCIPAL' : 'VARIANTE'}</small></button>`).join('');
   $$('#g-concepts .tab').forEach(b => b.onclick = () => pickConcept(+b.dataset.c));
+  $('#g-concepts .tab.on')?.scrollIntoView({ inline: 'nearest', block: 'nearest' });
   const fins = c ? [...new Set(Object.values(c.z).map(z => z[1] === 'factorym' ? 'factory' : z[1]))] : [];
   $('#g-fins').innerHTML = fins.map(f => `<li><i class="fin fin-${f}"></i>${FN[f] || f}</li>`).join('');
   gsap.fromTo(['#g-idea', '#g-concepts', '#g-fins'], { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.8, stagger: 0.08, delay: 0.45, ease: 'expo.out' });
@@ -724,9 +725,9 @@ function updateLabels() {
   }
   if (pts.length) {
     pts.sort((p, q) => p.sy - q.sy);
-    const colX = Math.max(...pts.map(p => p.sx)) + 70; let prev = -1e9; const op = Math.min(1, (e - 0.3) * 3);
+    const colX = Math.min(Math.max(...pts.map(p => p.sx)) + 70, innerWidth - 196); let prev = 64; const maxY = innerHeight - 150; const op = Math.min(1, (e - 0.3) * 3);
     for (const p of pts) {
-      const ly = Math.max(p.sy, prev + 36); prev = ly;
+      const ly = Math.min(Math.max(p.sy, prev + 38), maxY); prev = ly;
       p.el.style.opacity = op; p.el.style.transform = `translate(${colX}px, ${ly - 12}px)`;
       paths += `<path d="M${p.sx | 0},${p.sy | 0} L${(colX - 24) | 0},${ly | 0} L${colX | 0},${ly | 0}" /><circle cx="${p.sx | 0}" cy="${p.sy | 0}" r="2.5"/>`;
     }

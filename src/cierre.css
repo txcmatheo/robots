@@ -11,7 +11,7 @@
 .cz-vig{position:absolute; inset:0; pointer-events:none; background:radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,0,.62) 100%)}
 .cz-stage{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:16px; text-align:center}
 .cz-duo{display:flex; align-items:center; gap:clamp(14px,3vw,40px); font-family:var(--cz-mono); font-weight:700; font-size:clamp(12px,1.6vh,15px); letter-spacing:.16em}
-.cz-duo b{opacity:0; color:var(--c)}
+.cz-duo b{opacity:0; color:color-mix(in srgb,var(--c) 60%,var(--cz-crema))}
 .cz-duo i{font-style:normal; color:rgba(241,237,230,.5); opacity:0}
 .cz-flash{position:absolute; inset:0; background:radial-gradient(circle at 50% 50%, rgba(255,248,230,.9), rgba(232,194,122,.25) 30%, transparent 60%); opacity:0; pointer-events:none}
 /* titular */
