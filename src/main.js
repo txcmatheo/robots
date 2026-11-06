@@ -16,7 +16,7 @@ import { DecalGeometry } from 'three/addons/geometries/DecalGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { crearRing } from './ring.js';
 import { mostrarCierre, ocultarCierre } from './cierre.js';
-import { IMPRESOS } from './impresos.js';
+import { IMPRESOS, IDEAS } from './impresos.js';
 import { BLESSD_EXTRA } from './blessd_extra.js';
 import { ARTISTAS, CANCION, FABRICA, IMPRESOS_FABRICA, MODELO, WESTCOL_DISENOS, BLESSD_DISENOS, ZONAS } from './datos.js';
 
@@ -382,7 +382,7 @@ async function cargarEntregas() {
     const propios = art.id === 'westcol' ? WESTCOL_DISENOS : art.id === 'blessd' ? [...BLESSD_DISENOS, ...BLESSD_EXTRA, ...conceptos.filter(c => c.nombre === 'SIEMPRE BLESSD')] : null;
     // diseño inicial de cada uno: Kid W para Westcol, E.M.H.D.M para Blessd (van primeros en su colección)
     const INICIAL = { westcol: 'KID W', blessd: 'E.M.H.D.M' }; if (propios) { const k = propios.findIndex(x => x.nombre === INICIAL[art.id]); if (k > 0) propios.unshift(...propios.splice(k, 1)); }
-    art.conceptos = propios ? propios.map((x, k) => ({ ...x, p: IMPRESOS[x.nombre] || x.p, z: { ...FABRICA, ...x.z }, id: String.fromCharCode(65 + k) })) : conceptos;
+    art.conceptos = propios ? propios.map((x, k) => ({ ...x, p: IMPRESOS[x.nombre] || x.p, idea: IDEAS[x.nombre] || x.idea, z: { ...FABRICA, ...x.z }, id: String.fromCharCode(65 + k) })) : conceptos;
     if (files.logo) art.logo = d(files.logo);
     if (files.logoWebp) art.logoWebp = d(files.logoWebp);
     art.renders = Object.fromEntries(Object.entries(files.renders || {}).map(([k, f]) => [k, d(f)]));
@@ -688,7 +688,7 @@ function fillGarage() {
   $('#g-unit').textContent = `${ESQUINA[S.idx].nombre} · ${MODELO.corto}`;
   $('#g-logo').innerHTML = logoHTML(a);
   gsap.fromTo('#g-logo', { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.9, ease: 'expo.out' });
-  palabras($('#g-concept'), c ? titulo(c.nombre) + '.' : 'En diseño.');
+  palabras($('#g-concept'), c ? titulo(c.nombre) + '.' : 'En diseño.'); ajustarTitulo($('#g-concept'));
   $('#g-idea').textContent = c ? c.idea : 'Su piel está en diseño.';
   $('#g-concepts').innerHTML = a.conceptos.map((k, j) => `<button class="tab ${j === ci ? 'on' : ''}" data-c="${j}" aria-pressed="${j === ci}"><b>${j + 1} · ${esc(k.nombre)}</b><span class="sw">${k.paleta.slice(0, 5).map(p => `<i style="background:${p}"></i>`).join('')}</span><small>${j === 0 ? 'PRINCIPAL' : 'VARIANTE'}</small></button>`).join('');
   $$('#g-concepts .tab').forEach(b => b.onclick = () => pickConcept(+b.dataset.c));
@@ -698,6 +698,10 @@ function fillGarage() {
   gsap.fromTo(['#g-idea', '#g-concepts', '#g-fins'], { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.8, stagger: 0.08, delay: 0.45, ease: 'expo.out' });
   $$('#g-mode button').forEach(b => b.classList.toggle('on', b.dataset.v === 'ppf'));
   const nx = CH[S.ch + 1]; $('#g-next').innerHTML = `<small>SIGUIENTE</small><b>${nx ? (nx.k === 'garage' ? ARTISTAS[nx.i].nombre : nx.n) : ''} →</b>`; $('#g-next').style.display = nx ? '' : 'none';
+}
+function ajustarTitulo(el) {
+  el.style.removeProperty('font-size'); el.style.whiteSpace = 'nowrap';
+  requestAnimationFrame(() => { const max = el.parentElement.clientWidth; let fs = parseFloat(getComputedStyle(el).fontSize); while (el.scrollWidth > max && fs > 26) { fs -= 2; el.style.setProperty('font-size', fs + 'px', 'important'); } });
 }
 function pickConcept(j) {
   const a = ARTISTAS[S.idx]; if (!a.conceptos[j] || (S.concept[S.idx] === j && robots[S.idx].userData.modo === j)) return;

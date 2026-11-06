@@ -13,9 +13,11 @@ await page.goto('http://localhost:5174/', { waitUntil: 'load' });
 await page.waitForFunction(() => document.querySelector('#press') && !document.querySelector('#press').disabled, { timeout: 60000 });
 const w = ms => new Promise(r => setTimeout(r, ms));
 await page.click('#press'); await w(800); await page.click('#io-skip'); await w(3500);
+let capActual = 0;
 for (const [cap, artista] of [[1, 'westcol'], [2, 'blessd']]) {
   if (SOLO && SOLO !== artista) continue;
-  await page.evaluate(n => { for (let i = 0; i < n; i++) dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' })); }, cap === 1 ? 1 : 1);
+  const pasos = cap - capActual; capActual = cap;
+  await page.evaluate(n => { for (let i = 0; i < n; i++) dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' })); }, pasos);
   await w(4500);
   await page.evaluate(() => { document.querySelector('#b-rot').classList.contains('on') && document.querySelector('#b-rot').click(); document.querySelectorAll('.ui, #labels, #leaders, #bottom, #top, #yt-mini, #tags, .fx, #cursor').forEach(e => e.style.visibility = 'hidden'); });
   const n = await page.evaluate(() => document.querySelectorAll('#g-concepts .tab').length);

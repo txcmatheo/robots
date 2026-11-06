@@ -62,7 +62,7 @@ export const BLESSD_EXTRA = [
   {
     // morado manda en todo el cuerpo; lila solo en impresos y espinilleras; plata en hombros/rótulas.
     nombre: 'ERA MORADA', acento: MORADO, visor: LILA,
-    idea: 'El morado que Blessd se tiñó por Trunks antes de que el azul se volviera su firma: uva y morado de punta a punta con BLESSD en lila sobre el pecho. En la espalda, EL BENDITO dentro de un aura de energía.',
+    idea: 'El morado que Blessd se tiñó por Trunks antes de que el azul se volviera su firma: uva y morado de punta a punta, pecho limpio y EL BENDITO dentro de un aura de energía en lo alto de la espalda.',
     paleta: [MORADO, UVA, LILA, PLATA],
     z: {
       casco: [MORADO, 'shift'], coronilla: [LILA, 'pearl'], pecho: [MORADO, 'gloss'], pecho_inf: [UVA, 'satin'],
@@ -70,16 +70,12 @@ export const BLESSD_EXTRA = [
       cadera: [UVA, 'matte'], muslo: [MORADO, 'gloss'], rodilla: [PLATA, 'chrome'], espinillera: [UVA, 'gloss'], bota: [MORADO, 'shift'],
     },
     p: {
-      pecho: (c, W, H) => {
-        enCaja(c, W, H, 'BLESSD', [0.14, 0.13, 0.86, 0.33], { color: LILA });
-        enCaja(c, W, H, 'ERA MORADA', [0.3, 0.36, 0.7, 0.43], { font: 'JetBrains Mono', weight: 800, color: PLATA, track: 0.25 });
-      },
       mochila: (c, W, H) => {
-        anillo(c, W, H, { x: 0.5, y: 0.47, r: 0.36, color: 'rgba(201,179,242,.35)', grosor: 0.05 });
-        anillo(c, W, H, { x: 0.5, y: 0.47, r: 0.29, color: LILA, grosor: 0.012 });
-        enCaja(c, W, H, 'EL', [0.4, 0.3, 0.6, 0.38], { font: 'Bodoni Moda', weight: 600, italic: true, color: LILA });
-        enCaja(c, W, H, 'BENDITO', [0.2, 0.39, 0.8, 0.55], { color: BLANCO });
-        enCaja(c, W, H, 'ITAGÜÍ · COL', [0.3, 0.82, 0.7, 0.88], { font: 'JetBrains Mono', weight: 700, color: LILA, track: 0.2 });
+        // todo en la parte alta de la placa: el puerto central (y≈0,47) y las rejillas de abajo quedan libres
+        anillo(c, W, H, { x: 0.5, y: 0.27, r: 0.22, color: 'rgba(201,179,242,.35)', grosor: 0.045 });
+        anillo(c, W, H, { x: 0.5, y: 0.27, r: 0.18, color: LILA, grosor: 0.011 });
+        enCaja(c, W, H, 'EL', [0.41, 0.13, 0.59, 0.21], { font: 'Bodoni Moda', weight: 600, italic: true, color: LILA });
+        enCaja(c, W, H, 'BENDITO', [0.22, 0.22, 0.78, 0.37], { color: BLANCO });
       },
       muslo: (c, W, H) => { cruzGotica(c, 0.5 * W, 0.28 * H, Math.min(W, H) * 0.18, LILA); },
       espinillera: (c, W, H) => enCajaVertical(c, W, H, 'BLESSD', [0.26, 0.12, 0.74, 0.88], { color: LILA }),

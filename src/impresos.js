@@ -194,3 +194,18 @@ for (const d of Object.values(IMPRESOS)) {
   else if (d.pecho_puntos) d.pecho = d.pecho_puntos;
   delete d.pecho_inf; delete d.pecho_puntos;
 }
+
+// Descripciones cortas (máx. dos frases) y fieles a lo que lleva cada piel
+export const IDEAS = {
+  'KID W': 'Inspirado en el pequeño Buu: piel rosa, muñequeras negras con filete dorado, pantalón blanco amplio y botas café. Agujeros de vapor en pecho y espalda.',
+  'W SOUND ORO': 'La edición de estudio de W Sound: negro piano con cromo oro y un vinilo dorado en el pecho. En la espalda, la firma del sello.',
+  KICK: 'Su casa es Kick: negro satinado con el verde de la marca en casco, hombros y botas. El logo oficial va grande en la espalda.',
+  'G WAGON': 'Su G Wagon hecha piel: acero plata gastado, remaches en cada costura y cruces daga. En la espalda, la tapa de la llanta de repuesto.',
+  'RAYO W': 'Un coche de carreras hecho robot: rojo caramelo con rayos amarillo-naranja y estelas de velocidad. Bandera a cuadros en las espinilleras.',
+  'CAMPEÓN': 'Boxeo de lujo: vino satinado como una bata de campeón y acolchado en rombos dorados en pecho y espalda. Vendas crema y botas altas.',
+  'E.M.H.D.M': 'El Mejor Hombre del Mundo: el azul de Blessd de punta a punta, con las siglas y el halo sobre la H en el pecho.',
+  'E.P.H.D.M': 'El Peor Hombre del Mundo: negro trap con las siglas estarcidas y los cuernos sobre la H. Cadena helada y cromo en hombros y rótulas.',
+  'ERA MORADA': 'El morado que llevó antes del azul: uva y morado de punta a punta, pecho limpio y EL BENDITO dentro de un aura en la espalda.',
+  'HECHO EN MEDELLÍN': 'Su primer álbum (2021): el verde y blanco de Medellín, con MEDELLÍN en el pecho y MEDALLO en la espalda.',
+  'TRINIDAD BENDITA': 'Su disco de 2025: marfil y oro con un rosario en el pecho y tres cruces góticas en la espalda. BENDITO en las espinilleras.',
+};

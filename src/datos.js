@@ -25,10 +25,8 @@ export const FABRICA = {
   mochila: [BL, 'factory'], hombro: [PL, 'factorym'], brazo: [BL, 'factory'], antebrazo: [BL, 'factory'], cadera: [BL, 'factory'],
   muslo: [BL, 'factory'], rodilla: [PL, 'factorym'], espinillera: ['#5a5d63', 'factorym'], bota: [BL, 'factory'],
 };
-export const IMPRESOS_FABRICA = {
-  pecho: (c, W, H) => { texto(c, W, H, 'T800', { size: H * 0.16, color: '#16171a', y: 0.62, maxW: 0.3 }); c.fillStyle = '#d0242b'; c.fillRect(W * 0.7, H * 0.22, W * 0.07, H * 0.18); },
-  mochila: (c, W, H) => { texto(c, W, H, 'ENGINEAI', { size: H * 0.08, color: '#2a2b2f', y: 0.18, maxW: 0.6 }); c.fillStyle = '#d0242b'; c.fillRect(W * 0.3, H * 0.34, W * 0.4, H * 0.05); },
-};
+// De fábrica se muestra el modelo oficial tal cual, sin impresos añadidos
+export const IMPRESOS_FABRICA = {};
 
 export const ARTISTAS = [
   { id: 'westcol', nombre: 'WESTCOL', acento: '#F4A3C4', recomendado: 0, conceptos: [] },
