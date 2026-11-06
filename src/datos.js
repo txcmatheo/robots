@@ -136,6 +136,19 @@ function remaches(c, W, H, m = 0.05, n = 14, color = '#c9ccd1') {
   for (let i = 0; i <= n; i++) { const t = i / n; punto(W * (m + t * (1 - 2 * m)), H * m); punto(W * (m + t * (1 - 2 * m)), H * (1 - m)); punto(W * m, H * (m + t * (1 - 2 * m))); punto(W * (1 - m), H * (m + t * (1 - 2 * m))); }
   c.restore();
 }
+// rayo de carreras con degradado amarillo-naranja y contorno rojo oscuro
+function rayoCarrera(c, W, H, { x = 0.5, y = 0.5, w = 0.9, h = 0.5, rot = 0 } = {}) {
+  const pts = [[0, 0.42], [0.42, 0.3], [0.36, 0.5], [1, 0.18], [0.5, 0.62], [0.56, 0.44], [0.02, 0.72]];
+  c.save(); c.translate(x * W, y * H); c.rotate(rot); const bw = w * W, bh = h * H; c.translate(-bw / 2, -bh / 2);
+  const g = c.createLinearGradient(0, 0, bw, 0); g.addColorStop(0, '#FF8A00'); g.addColorStop(0.55, '#FFC400'); g.addColorStop(1, '#FFE45C');
+  c.beginPath(); pts.forEach(([px, py], i) => (i ? c.lineTo : c.moveTo).call(c, px * bw, (py - 0.18) / 0.54 * bh)); c.closePath();
+  c.lineJoin = 'round'; c.lineWidth = Math.min(bw, bh) * 0.06; c.strokeStyle = '#7A0A0A'; c.stroke(); c.fillStyle = g; c.fill(); c.restore();
+}
+function numeroCarrera(c, W, H, { x = 0.5, y = 0.5, r = 0.3, txt = 'W' } = {}) {
+  const R = Math.min(W, H) * r; c.save(); c.fillStyle = '#F2F2F0'; c.beginPath(); c.arc(x * W, y * H, R, 0, Math.PI * 2); c.fill();
+  c.lineWidth = R * 0.12; c.strokeStyle = '#0B0B0D'; c.stroke(); c.restore();
+  wMono(c, W, H, { color: '#D3121B', stroke: '#0B0B0D', sw: R * 0.06, x, y, s: r * 1.15 });
+}
 const NAVY = '#14213D', AMARILLO = '#F5C518';
 
 // Colección de Westcol, pensada para el T800 Max real:
@@ -211,6 +224,25 @@ export const WESTCOL_DISENOS = [
       muslo: (c, W, H) => { remaches(c, W, H, 0.07, 10); cruzGotica(c, W * 0.5, H * 0.32, W * 0.3); cruzGotica(c, W * 0.5, H * 0.72, W * 0.22); },
       espinillera: (c, W, H) => remaches(c, W, H, 0.07, 10),
       antebrazo: (c, W, H) => remaches(c, W, H, 0.08, 8),
+    },
+    glow: {},
+  },
+  {
+    nombre: 'RAYO W', acento: '#FFC400', visor: '#FFC400',
+    idea: 'Inspirado en el coche de carreras rojo más famoso: rojo caramelo brillante, rayos amarillo-naranja en pecho y muslos, hombros amarillos, número de carrera con la W y botas negras como llantas con letras blancas.',
+    paleta: ['#D3121B', '#FFC400', '#FF8A00', '#0B0B0D', '#F2F2F0'],
+    z: {
+      casco: ['#D3121B', 'gloss'], coronilla: ['#D3121B', 'gloss'], pecho: ['#D3121B', 'gloss'], pecho_inf: ['#D3121B', 'gloss'],
+      mochila: ['#D3121B', 'gloss'], hombro: ['#FFC400', 'gloss'], brazo: ['#D3121B', 'gloss'], antebrazo: ['#D3121B', 'gloss'],
+      cadera: ['#0B0B0D', 'satin'], muslo: ['#D3121B', 'gloss'], rodilla: ['#C9CCD1', 'chrome'], espinillera: ['#0B0B0D', 'satin'], bota: ['#0B0B0D', 'satin'],
+    },
+    p: {
+      pecho: (c, W, H) => { rayoCarrera(c, W, H, { x: 0.46, y: 0.5, w: 0.86, h: 0.62, rot: -0.08 }); },
+      mochila: (c, W, H) => { numeroCarrera(c, W, H, { y: 0.42, r: 0.3 }); texto(c, W, H, 'W RACING', { size: H * 0.1, color: '#FFC400', y: 0.86, maxW: 0.8 }); },
+      muslo: (c, W, H) => { rayoCarrera(c, W, H, { x: 0.5, y: 0.5, w: 1.6, h: 0.42, rot: Math.PI / 2 }); },
+      antebrazo: (c, W, H) => { c.fillStyle = '#FFC400'; c.fillRect(0, H * 0.82, W, H * 0.06); },
+      espinillera: (c, W, H) => vertical(c, W, H, 'WESTCOL', { size: W * 0.34, color: '#F2F2F0', font: 'JetBrains Mono', weight: 800 }),
+      bota: (c, W, H) => { c.fillStyle = '#F2F2F0'; c.fillRect(0, H * 0.18, W, H * 0.07); c.fillRect(0, H * 0.75, W, H * 0.07); },
     },
     glow: {},
   },

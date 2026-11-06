@@ -17,7 +17,7 @@ npm run preview   # sirve dist/ en local
 | --- | --- |
 | `index.html` | Marcado de todas las secciones: portada, selección, capítulo de cada robot, La piel y cierre |
 | `src/main.js` | Escena 3D, estados, cámara, UI, sonido y carga |
-| `src/datos.js` | Modelo, colores de fábrica, zonas y **colección de Westcol** (W Sound Oro, Kick, Kid W, G Wagon, West Santos) |
+| `src/datos.js` | Modelo, colores de fábrica, zonas y **colección de Westcol** (W Sound Oro, Kick, Kid W, G Wagon, Rayo W, West Santos) |
 | `src/estudio.js` | Estudio fotográfico procedural: ciclorama, piso con reflejo, luces y polvo |
 | `src/cierre.js` / `cierre.css` | Animación de cierre |
 | `src/diagramas.css` | Diagramas SVG de La piel: capas, proceso y regla |
