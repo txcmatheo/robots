@@ -160,7 +160,7 @@ export const WESTCOL_DISENOS = [
   {
     // negro manda; el oro solo vive en cromo (coronilla, hombros, rótulas, botas) y en el impreso. Fuera el rojo suelto.
     nombre: 'W SOUND ORO', acento: ORO, visor: ORO,
-    idea: 'La edición de estudio de su sello W Sound: negro piano con cromo oro en coronilla, hombros, rótulas y botas. En el pecho, un vinilo con la W; en la espalda, la firma del sello.',
+    idea: 'La edición de estudio de su sello W Sound: negro piano con cromo oro en coronilla, hombros, rótulas y botas. En el pecho, un vinilo dorado; en la espalda, la firma del sello.',
     paleta: [NEGRO, ORO, '#F2C230'],
     z: {
       casco: [NEGRO, 'gloss'], coronilla: ['#F2C230', 'gold'], pecho: [NEGRO, 'gloss'], pecho_inf: [NEGRO, 'satin'],
@@ -169,7 +169,7 @@ export const WESTCOL_DISENOS = [
     },
     p: {
       // héroe: el vinilo con la W grande en la etiqueta dorada
-      pecho: (c, W, H) => { vinilo(c, W, H, { x: 0.5, y: 0.5, r: 0.46 }); wMono(c, W, H, { color: NEGRO, y: 0.5, s: 0.28 }); },
+      pecho: (c, W, H) => { vinilo(c, W, H, { x: 0.5, y: 0.5, r: 0.46 }); },
       // héroe: W SOUND; debajo, un filete y MEDELLÍN pequeños en el mismo oro
       mochila: (c, W, H) => { texto(c, W, H, 'W SOUND', { size: H * 0.18, color: ORO, y: 0.34, maxW: 0.86 }); c.fillStyle = ORO; c.fillRect(W * 0.34, H * 0.49, W * 0.32, H * 0.01); texto(c, W, H, 'MEDELLÍN', { size: H * 0.06, color: 'rgba(232,194,122,.7)', y: 0.58, font: 'JetBrains Mono', weight: 700, maxW: 0.5 }); },
       muslo: (c, W, H) => vertical(c, W, H, 'WESTCOL', { size: W * 0.46, color: ORO }),
@@ -196,7 +196,7 @@ export const WESTCOL_DISENOS = [
   {
     // rosa manda; negro solo en muñequeras, cinturón y caña de la bota; dorado solo en filetes y hebilla.
     nombre: 'KID W', acento: '#F49AC1', visor: '#FF2A2A',
-    idea: 'Inspirado en el pequeño Buu: piel rosa, muñequeras negras con filete dorado, cinturón negro con hebilla dorada de la W y pantalón blanco amplio. Botas café con caña negra.',
+    idea: 'Inspirado en el pequeño Buu: piel rosa, muñequeras negras con filete dorado, cinturón negro con hebilla dorada y pantalón blanco amplio. Botas café con caña negra.',
     paleta: ['#F49AC1', NEGRO, '#E8B53A', BLANCO, '#A8661C'],
     z: {
       casco: ['#F49AC1', 'gloss'], coronilla: ['#F49AC1', 'gloss'], pecho: ['#F49AC1', 'gloss'], pecho_inf: [NEGRO, 'satin'],
@@ -205,9 +205,9 @@ export const WESTCOL_DISENOS = [
     },
     p: {
       // héroe: la hebilla dorada con la W, al pie del pecho, justo encima del cinturón negro (torso inferior)
-      pecho: (c, W, H) => { const g = c.createLinearGradient(0, H * 0.62, 0, H * 0.94); g.addColorStop(0, '#F7D25A'); g.addColorStop(1, '#C98E1E'); c.fillStyle = g; c.beginPath(); c.roundRect(W * 0.36, H * 0.62, W * 0.28, H * 0.32, W * 0.03); c.fill(); c.lineWidth = W * 0.012; c.strokeStyle = NEGRO; c.stroke(); wMono(c, W, H, { color: NEGRO, y: 0.78, s: 0.2 }); },
+      pecho: (c, W, H) => { const g = c.createLinearGradient(0, H * 0.62, 0, H * 0.94); g.addColorStop(0, '#F7D25A'); g.addColorStop(1, '#C98E1E'); c.fillStyle = g; c.beginPath(); c.roundRect(W * 0.36, H * 0.62, W * 0.28, H * 0.32, W * 0.03); c.fill(); c.lineWidth = W * 0.012; c.strokeStyle = NEGRO; c.stroke(); },
       // héroe: la W negra grande con vapor de cómic, el guiño a Buu enojado
-      mochila: (c, W, H) => { vapor(c, W, H, 'rgba(255,255,255,.9)', 4, 5); wMono(c, W, H, { color: NEGRO, y: 0.5, s: 0.5 }); },
+      mochila: (c, W, H) => vapor(c, W, H, 'rgba(255,255,255,.9)', 6, 5),
       antebrazo: (c, W, H) => { c.fillStyle = '#E8B53A'; c.fillRect(0, H * 0.02, W, H * 0.06); c.fillRect(0, H * 0.92, W, H * 0.06); },
       // pliegues suaves del pantalón amplio (sin héroe: es tela)
       muslo: (c, W, H) => { c.save(); c.strokeStyle = 'rgba(120,128,140,.3)'; c.lineWidth = W * 0.025; for (let k = 0.22; k < 1; k += 0.2) { c.beginPath(); c.moveTo(W * k, 0); c.bezierCurveTo(W * (k + 0.08), H * 0.3, W * (k - 0.06), H * 0.65, W * (k + 0.03), H); c.stroke(); } c.restore(); },
@@ -237,7 +237,7 @@ export const WESTCOL_DISENOS = [
   {
     // rojo caramelo manda; el amarillo-naranja solo en los rayos; negro en cadera, espinilleras y botas (las llantas).
     nombre: 'RAYO W', acento: '#FFC400', visor: '#FFC400',
-    idea: 'Un coche de carreras rojo hecho robot: rojo caramelo brillante con rayos amarillo-naranja en pecho y muslos, y número de carrera con la W en la espalda. Piernas negras como llantas, con letras blancas.',
+    idea: 'Un coche de carreras rojo hecho robot: rojo caramelo brillante con rayos amarillo-naranja en pecho y muslos, y un rayo grande en la espalda. Piernas negras como llantas, con letras blancas.',
     paleta: ['#D3121B', '#FFC400', NEGRO, BLANCO],
     z: {
       casco: ['#D3121B', 'gloss'], coronilla: ['#D3121B', 'gloss'], pecho: ['#D3121B', 'gloss'], pecho_inf: ['#D3121B', 'gloss'],
@@ -246,7 +246,7 @@ export const WESTCOL_DISENOS = [
     },
     p: {
       pecho: (c, W, H) => { rayoCarrera(c, W, H, { x: 0.48, y: 0.5, w: 0.88, h: 0.66, rot: -0.08 }); },
-      mochila: (c, W, H) => { numeroCarrera(c, W, H, { y: 0.44, r: 0.32 }); },
+      mochila: (c, W, H) => rayoCarrera(c, W, H, { x: 0.5, y: 0.5, w: 0.84, h: 0.56, rot: -0.12 }),
       muslo: (c, W, H) => { rayoCarrera(c, W, H, { x: 0.5, y: 0.5, w: 1.5, h: 0.46, rot: Math.PI / 2 }); },
       espinillera: (c, W, H) => vertical(c, W, H, 'WESTCOL', { size: W * 0.34, color: BLANCO, font: 'JetBrains Mono', weight: 800 }),
       bota: (c, W, H) => { c.fillStyle = BLANCO; c.fillRect(0, H * 0.18, W, H * 0.05); },
