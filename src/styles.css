@@ -528,3 +528,16 @@ html{font-synthesis:none}
   #info.ficha{bottom:calc(160px + var(--safe-b));max-height:min(54dvh,calc(100dvh - 160px - 120px))}
   body.con-ficha .g-left{opacity:0;pointer-events:none}
 }
+/* celular: franjas de cine finas en la intro, para que los robots se vean grandes */
+@media (max-width:820px){
+  .io-bars i{height:4vh}
+  .io-c{bottom:calc(4vh + 72px + var(--safe-b))}
+  #io-skip{bottom:calc(4vh + 16px + var(--safe-b))!important}
+  /* ficha compacta: deja ver al robot arriba */
+  #info.ficha{max-height:min(40dvh,calc(100dvh - 330px))!important;padding:12px 14px!important}
+  #info.ficha .i-n{font-size:20px}
+  #info .fi{font-size:12px;margin:6px 0}
+  #info .fi td{padding:3px 4px}
+  #info .fi td:nth-child(3){font-size:10px}
+  #info.ficha p{font-size:12px;line-height:1.4;margin-top:6px}
+}
