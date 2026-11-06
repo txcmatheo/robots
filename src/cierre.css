@@ -1,8 +1,8 @@
-/* Cierre animado: los dos robots, sus dos colores. Negro, crema, oro. */
+/* Cierre animado: los dos robots, sus dos colores, sobre la identidad Stream Fighters 5. */
 .cz{
   --cz-negro:#05060d; --cz-crema:#f4f5fb; --cz-oro:#a9bbff;
-  --cz-serif:'Bodoni Moda',Didot,'Times New Roman',serif;
-  --cz-mono:'JetBrains Mono',ui-monospace,monospace;
+  --cz-serif:'Chakra Petch',system-ui,sans-serif;
+  --cz-mono:'Inter Variable',Inter,system-ui,sans-serif;
   position:absolute; inset:0; overflow:hidden; background:var(--cz-negro);
   color:var(--cz-crema); -webkit-font-smoothing:antialiased; contain:layout paint;
 }
@@ -34,8 +34,8 @@
 .cz-rule{display:flex; width:min(340px, 70vw); gap:4px; margin:clamp(12px,2.6vh,28px) 0 clamp(10px,1.8vh,18px)}
 .cz-rule i{flex:1; height:2px; display:block; transform-origin:0 50%; transform:scaleX(0); border-radius:2px}
 .cz-m1,.cz-m2{font-family:var(--cz-mono); margin:0; opacity:0; text-wrap:balance}
-.cz-m1{font-weight:700; font-size:clamp(10px, 1.5vh, 13px); letter-spacing:.22em; color:var(--cz-oro); text-transform:uppercase}
-.cz-m2{margin-top:10px; font-weight:400; font-size:clamp(9.5px, 1.35vh, 12px); letter-spacing:.08em; color:rgba(244,245,251,.62); line-height:1.7; max-width:calc(100vw - 32px)}
+.cz-m1{font-weight:700; font-size:clamp(11px, 1.5vh, 13px); letter-spacing:.22em; color:var(--cz-oro); text-transform:uppercase}
+.cz-m2{margin-top:10px; font-weight:400; font-size:clamp(11px, 1.35vh, 12px); letter-spacing:.08em; color:#a3abcc; line-height:1.7; max-width:calc(100vw - 32px)}
 
 @media (max-width:560px){
   .cz-m1{letter-spacing:.14em}

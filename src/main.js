@@ -616,7 +616,7 @@ function camTo(pos, tgt, dur = 1.6, ease = 'power3.inOut') {
   gsap.to(camera.position, { x: pos.x, y: pos.y, z: pos.z, duration: dur, ease });
   gsap.to(look, { x: tgt.x, y: tgt.y, z: tgt.z, duration: dur, ease });
 }
-function camSelect() { const n = isNarrow(), z = 5.4 + Math.max(0, 1.7 - innerWidth / innerHeight) * 2.4; const zn = 6.4 + Math.max(0, 0.9 - innerWidth / innerHeight) * 3.2; camTo(n ? V(0, 0.95, zn) : V(-0.55, 1.15, z), n ? V(0, 0.62, 0) : V(-0.55, 0.86, 0), 2.2); }
+function camSelect() { const n = isNarrow(), z = 5.4 + Math.max(0, 1.7 - innerWidth / innerHeight) * 2.4; const zn = 6.4 + Math.max(0, 0.9 - innerWidth / innerHeight) * 4.6; camTo(n ? V(0, 0.95, zn) : V(-0.55, 1.15, z), n ? V(0, 0.62, 0) : V(-0.55, 0.86, 0), 2.2); }
 function camGarage() { const n = isNarrow(); camTo(V(0.4, n ? 0.95 : 1.1, n ? 6.2 : 4.5), V(n ? 0 : -0.45, n ? 0.45 : 0.92, 0), 1.9); }
 
 // ================= CAPÍTULOS =================
@@ -658,7 +658,7 @@ function setMode(mode) {
   }
   if (mode === 'cierre') {
     goboHide(); sfx.musica('musica'); sfx.boom();
-    mostrarCierre($('#cierre'), { acentos: ARTISTAS.map(x => x.conceptos[0]?.acento || x.acento), nombres: ARTISTAS.map(x => x.nombre), sub: 'STREAM FIGHTERS 5 · 14 NOV · BOGOTÁ' });
+    mostrarCierre($('#cierre'), { acentos: ESQUINA.map(e => e.color), nombres: ARTISTAS.map(x => x.nombre), sub: 'STREAM FIGHTERS 5 · 14 NOV · BOGOTÁ' });
   }
   if (mode === 'piel') { goboHide(); camTo(V(0, 2.2, 10), V(0, 1.1, 0), 2.2); backdrop('#a9bbff', 0.2); openPiel(); sfx.musica('musica'); }
 }
@@ -852,7 +852,7 @@ function updateLabels() {
   }
   if (pts.length) {
     pts.sort((p, q) => p.sy - q.sy);
-    const colX = Math.min(Math.max(...pts.map(p => p.sx)) + 70, innerWidth - 196); let prev = 64; let maxY = innerHeight - 150; const yt = $("#yt-mini"); if (isNarrow() && yt?.classList.contains("show")) maxY = Math.min(maxY, yt.getBoundingClientRect().top - 24); const op = Math.min(1, (e - 0.3) * 3);
+    const colX = Math.min(Math.max(...pts.map(p => p.sx)) + 70, innerWidth - 196); let prev = 64; let maxY = innerHeight - 150; const dockEl = document.querySelector(".dock"); if (dockEl?.offsetParent) maxY = Math.min(maxY, dockEl.getBoundingClientRect().top - 44); const yt = $("#yt-mini"); if (isNarrow() && yt?.classList.contains("show")) maxY = Math.min(maxY, yt.getBoundingClientRect().top - 24); const op = Math.min(1, (e - 0.3) * 3);
     for (const p of pts) {
       const ly = Math.min(Math.max(p.sy, prev + 38), maxY); prev = ly;
       p.el.style.opacity = op; p.el.style.transform = `translate(${colX}px, ${ly - 12}px)`;
@@ -877,7 +877,7 @@ function buildTags() {
 }
 function updateTags() {
   if (S.mode !== 'select') return;
-  robots.forEach((r, i) => { tmpV.set(r.position.x, -0.02, 0.35).project(camera); const x = (tmpV.x * 0.5 + 0.5) * innerWidth, y = Math.min((-tmpV.y * 0.5 + 0.5) * innerHeight, innerHeight - (tagH ||= tagEls[i].offsetHeight || 150) - 84); const mx = (tagEls[i].offsetWidth || 120) / 2 + 8; tagEls[i].style.transform = `translate(${Math.min(innerWidth - mx, Math.max(mx, x)) | 0}px, ${y | 0}px)`; });
+  robots.forEach((r, i) => { tmpV.set(r.position.x, -0.02, 0.35).project(camera); const x = (tmpV.x * 0.5 + 0.5) * innerWidth, y = Math.min((-tmpV.y * 0.5 + 0.5) * innerHeight, innerHeight - (tagH ||= tagEls[i].offsetHeight || 150) - 84); const mx = Math.max(60, (tagEls[i].offsetWidth || 120) / 2 + 16); tagEls[i].style.transform = `translate(${Math.min(innerWidth - mx, Math.max(mx, x)) | 0}px, ${y | 0}px)`; });
 }
 
 // ================= CONTROLES =================
@@ -903,7 +903,7 @@ function wireUI() {
     await vestir(r, toFab ? 'fabrica' : S.concept[S.idx], true);
   });
   $('#snd').onclick = () => { const on = sfx.toggle(); $('#snd').classList.toggle('off', !on); $('#snd').setAttribute('aria-pressed', on); };
-  $('#chapters').innerHTML = CH.map((c, i) => `<a href="#" role="button" data-i="${i}" style="--c:${c.k === 'garage' ? (ARTISTAS[c.i].conceptos[0]?.acento || ARTISTAS[c.i].acento) : '#a9bbff'}"><b>${String(i + 1).padStart(2, '0')}</b>${c.n}</a>`).join('');
+  $('#chapters').innerHTML = CH.map((c, i) => `<a href="#" role="button" data-i="${i}" style="--c:${c.k === 'garage' ? ESQUINA[c.i].color : '#a9bbff'}"><b>${String(i + 1).padStart(2, '0')}</b>${c.n}</a>`).join('');
   $$('#chapters a').forEach(a => a.onclick = e => { e.preventDefault(); goCh(+a.dataset.i); });
   $('#jump').innerHTML = ARTISTAS.map(a => `<button style="--c:${a.conceptos[0]?.acento || a.acento}">${a.nombre} →</button>`).join('');
   $$('#jump button').forEach((b, i) => b.onclick = () => goCh(1 + i));

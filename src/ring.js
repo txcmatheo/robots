@@ -170,7 +170,13 @@ export function crearRing(scene, renderer) {
     setAcento(hex, k = 0.6) { colObj.set(hex); intObj = THREE.MathUtils.clamp(k, 0, 1); },
     // lo que queda entre la cámara y el robot se oculta (como en una transmisión de boxeo)
     ocultar(cam) {
-      for (const p of postes) { const [x, z] = p.userData.xz; p.visible = Math.hypot(cam.x - x, cam.z - z) > 1.6; }
+      // un poste se oculta si está cerca de la cámara o en la línea entre la cámara y el centro del ring
+      for (const p of postes) {
+        const [x, z] = p.userData.xz; const dx = -cam.x, dz = -cam.z, L2 = dx * dx + dz * dz || 1;
+        const t = Math.max(0, Math.min(1, ((x - cam.x) * dx + (z - cam.z) * dz) / L2));
+        const d = Math.hypot(cam.x + dx * t - x, cam.z + dz * t - z);
+        p.visible = Math.hypot(cam.x - x, cam.z - z) > 1.6 && d > 0.75;
+      }
       for (const g of cuerdas) { const l = g.userData.lado; g.visible = !((l === 'izq' && cam.x < -M + 0.2) || (l === 'der' && cam.x > M - 0.2) || (l === 'fondo' && cam.z < -M + 0.2)); }
     },
     update(t) {

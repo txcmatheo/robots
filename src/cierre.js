@@ -174,7 +174,7 @@ export function mostrarCierre(contenedor, { acentos = ['#F4A3C4', '#2651B5'], no
   if (contenedor.__cz) limpiar(contenedor);
   const estado = { muerto: false, tls: [], ticker: null, onResize: null };
   contenedor.__cz = estado;
-  Promise.race([document.fonts.load('italic 600 60px "Bodoni Moda"'), new Promise((r) => setTimeout(r, 900))])
+  Promise.race([document.fonts.load('italic 700 60px "Chakra Petch"'), new Promise((r) => setTimeout(r, 900))])
     .catch(() => { }).then(() => { if (!estado.muerto) construir(); });
 
   function construir() {
